@@ -1,0 +1,2 @@
+ros_astra_camera:ros_astra_launch:vision
+-DCATKIN_DEVEL_PREFIX=/home/turtlebot6/workspace/devel -DCMAKE_INSTALL_PREFIX=/home/turtlebot6/workspace/install -G Unix Makefiles

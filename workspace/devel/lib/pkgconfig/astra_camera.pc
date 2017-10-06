@@ -1,0 +1,8 @@
+prefix=/home/turtlebot6/workspace/devel
+
+Name: astra_camera
+Description: Description of astra_camera
+Version: 0.2.0
+Cflags: -I/home/turtlebot6/workspace/devel/include -I/home/turtlebot6/workspace/src/ros_astra_camera/include
+Libs: -L/home/turtlebot6/workspace/devel/lib -lastra_wrapper
+Requires: camera_info_manager dynamic_reconfigure image_transport nodelet sensor_msgs roscpp message_runtime
