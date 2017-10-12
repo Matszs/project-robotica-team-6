@@ -1,0 +1,4 @@
+<launch>
+	<node pkg="mqtt_controller" type="mqtt_controller" name="mqtt_controller" output="screen" />
+</launch>
+
