@@ -1,5 +1,6 @@
 <html>
 <head>
+    <meta charset="utf-8" />
     <title>Robotica</title>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js"></script>
     <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
@@ -9,13 +10,51 @@
 
 </head>
 <body>
-    <input type="color" name="low" id="low" /><input type="color" name="high" id="high" /><button id="set-color">Set Color</button>
+
+    <div id="container">
+
+        <div id="box-view">
+            <h1>Robotica Team 6</h1>
 
 
-    <canvas id="canvas"></canvas>
+            <p>
+                Set colourtracking colours:
+            </p>
+            <table>
+                <tr>
+                    <th>Start-range</th>
+                    <td><input type="color" name="low" id="low" /></td>
+                </tr>
+                <tr>
+                    <th>End-range</th>
+                    <td><input type="color" name="high" id="high" /></td>
+                </tr>
+                <tr>
+                    <th>&nbsp;</th>
+                    <td><button id="set-color">Set Color</button></td>
+                </tr>
+            </table>
 
 
+            <hr />
 
+            <table>
+                <th>Graden:</th>
+                <td><span id="text-degrees"></span></td>
+            </table>
+
+
+        </div>
+
+        <div id="zoom">
+            <a data-zoom="0.2" href="#">-</a>
+            <a data-zoom="0" href="#" style="font-size: 12px;">🔍</a>
+            <a data-zoom="-0.2" href="#">+</a>
+        </div>
+
+        <canvas id="canvas"></canvas>
+
+    </div>
 
 </body>
 </html>

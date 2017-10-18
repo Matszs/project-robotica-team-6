@@ -1,5 +1,86 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900');
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: #ebe8de;
+    font-family: 'Roboto', sans-serif;
+}
+
+#container {
+    height: 100%;
+    position: relative;
+    width: 100%;
+}
+
+
 canvas {
-    border: 1px solid black;
-    height: 400px;
-    width: 400px;
+    height: 100%;
+    position: absolute;
+    width: 100%;
+    z-index: 10;
+}
+
+#box-view {
+    background: #fff;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    border-radius: 3px;
+    left: 20px;
+    transition: 0.3s;
+    top: 20px;
+    padding: 20px 20px;
+    position: absolute;
+    z-index: 11;
+    width: 300px;
+}
+
+h1 {
+    font-weight: 300;
+    margin: 0 0 20px 0;
+}
+
+table {
+    text-align: left;
+    width: 100%;
+}
+
+table tr td {
+    padding-top: 10px;
+}
+
+hr {
+    border: none;
+    border-bottom: 1px solid #ebe8de;
+    background: none;
+    box-shadow: none;
+}
+
+#zoom {
+    bottom: 20px;
+    left: 20px;
+    position: absolute;
+    z-index: 13;
+}
+
+#zoom a {
+    background: #fff;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    color: #333;
+    cursor: pointer;
+    border-radius: 3px;
+    display: block;
+    float: left;
+    font-size: 20px;
+    margin: 5px;
+    padding: 6px 8px;
+    text-decoration: none;
+    text-align: center;
+    width: 20px;
+    height: 23px;
+    line-height: 23px;
+}
+
+#zoom a:hover, #zoom a:active {
+    text-decoration: none;
+    opacity: 0.8;
 }
