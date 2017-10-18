@@ -1,0 +1,9 @@
+<library path="lib/libkobuki_walker_nodelet">
+<class name="kobuki_walker/WalkerControllerNodelet"
+       type="kobuki::WalkerControllerNodelet"
+       base_class_type="nodelet::Nodelet">
+    <description>
+        Nodelet the Kobuki's walker controller
+    </description>
+</class>
+</library>

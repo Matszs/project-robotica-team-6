@@ -1,0 +1,4 @@
+<launch>
+	<node pkg="autonome" type="autonome" name="autonome" output="screen" />
+</launch>
+

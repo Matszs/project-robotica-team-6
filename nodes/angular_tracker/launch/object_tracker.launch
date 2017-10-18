@@ -1,0 +1,4 @@
+<launch>
+	<node pkg="angular_tracker" type="angular_tracker" name="angular_tracker" output="screen" />
+</launch>
+
