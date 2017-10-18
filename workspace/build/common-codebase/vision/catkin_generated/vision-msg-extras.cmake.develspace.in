@@ -1,2 +1,0 @@
-set(vision_MESSAGE_FILES "/home/turtlebot6/workspace/src/common-codebase/vision/msg/TrackedPosition.msg;/home/turtlebot6/workspace/src/common-codebase/vision/msg/SetTrackingColours.msg")
-set(vision_SERVICE_FILES "")

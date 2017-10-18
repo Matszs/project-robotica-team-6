@@ -1,8 +1,0 @@
-prefix=/home/turtlebot6/workspace/install
-
-Name: robot_arm
-Description: Description of robot_arm
-Version: 0.0.0
-Cflags: -I/home/turtlebot6/workspace/install/include
-Libs: -L/home/turtlebot6/workspace/install/lib -lnavigation
-Requires: roscpp message_runtime

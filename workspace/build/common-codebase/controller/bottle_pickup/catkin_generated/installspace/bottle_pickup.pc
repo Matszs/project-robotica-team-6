@@ -1,8 +1,0 @@
-prefix=/home/turtlebot6/workspace/install
-
-Name: bottle_pickup
-Description: Description of bottle_pickup
-Version: 0.0.0
-Cflags: 
-Libs: -L/home/turtlebot6/workspace/install/lib -lnavigation
-Requires: roscpp message_runtime

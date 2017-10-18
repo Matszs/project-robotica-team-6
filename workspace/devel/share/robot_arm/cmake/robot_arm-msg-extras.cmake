@@ -1,2 +1,0 @@
-set(robot_arm_MESSAGE_FILES "/home/turtlebot6/workspace/src/common-codebase/robot_arm/msg/Position.msg")
-set(robot_arm_SERVICE_FILES "/home/turtlebot6/workspace/src/common-codebase/robot_arm/srv/SetArmPosition.srv;/home/turtlebot6/workspace/src/common-codebase/robot_arm/srv/GetArmPosition.srv;/home/turtlebot6/workspace/src/common-codebase/robot_arm/srv/SetHandState.srv;/home/turtlebot6/workspace/src/common-codebase/robot_arm/srv/GetHandState.srv")
