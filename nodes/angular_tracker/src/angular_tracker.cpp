@@ -13,17 +13,55 @@ using namespace std;
 
 ros::Publisher driver;
 
+//initial values for the kalman filter
+double rotation_x_est_last =  -msg->x * 2;
+double rotation_P_last = 0;
+
+double acceleration_x_est_last = 0;
+double acceleration_P_last = 0;
+
+double kalmanFilter(double input, double x_est_last, double P_last){
+    //the noise in the system
+    double Q = 0.022;
+    double R = 0.617;
+
+    double K;
+    double P;
+    double P_temp;
+    double x_temp_est;
+    double x_est;
+    double z_real = 0; //the ideal value we wish to measure(not used in this case)
+    double z_measured; //measured data
+
+    //do a prediction
+    x_temp_est = z_real + x_est_last;
+    P_temp = P_last + Q;
+    //calculate the Kalman gain
+    K = P_temp * (1.0/(P_temp + R));
+    //measure
+    z_measured = input;
+    //correct
+    x_est = x_temp_est + K * (z_measured - x_temp_est);
+    P = (1- K) * P_temp;
+    //update our last's
+    P_last = P;
+    x_est_last = x_est;
+    return x_est;
+}
+
+
 void trackedCallback(const vision::TrackedPositionConstPtr& msg) {
   ROS_INFO("x: [%f], y: [%f], z: [%f], ", -msg->x * 2, -msg->y, -msg->z);
 
-  double rotation = -msg->x * 2;
+  double rotation = kalmanFilter(-msg->x, rotation_x_est_last, rotation_P_last) * 2;
 
   geometry_msgs::Twist driveObj;
   driveObj.angular.z = rotation;
 
   if(rotation < 1 && rotation > -1) {
 
-    double filter = msg->z;
+    double filter = (msg->z, acceleration_x_est_last, acceleration_P_last);
+
     if(filter > 4)
         filter = 4;
 
