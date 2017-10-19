@@ -4,7 +4,6 @@ find_package(catkin REQUIRED COMPONENTS ecl_threads
                                         geometry_msgs
                                         kobuki_msgs
                                         nodelet
-                                        pluginlib
                                         roscpp
                                         std_msgs
                                         yocs_controllers)

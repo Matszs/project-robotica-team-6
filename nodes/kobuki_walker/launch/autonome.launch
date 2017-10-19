@@ -1,14 +1,5 @@
-<!--
-  Random Walker App
-
-  Launches:
-    * random_walker_controller
-
-  Requires kobuki_node/minimal.launch to be started before.
- -->
 <launch>
-  <node pkg="nodelet" type="nodelet" name="kobuki_walker_controller"
-        args="load kobuki_walker/WalkerControllerNodelet mobile_base_nodelet_manager">
+  <node pkg="nodelet" type="nodelet" name="kobuki_walker_controller" args="load kobuki_walker/WalkerControllerNodelet mobile_base_nodelet_manager">
     <param name="update_rate"                                       value="10.0"/>
     <param name="linear_velocity"                                   value="0.1"/>
     <param name="angular_velocity"                                  value="0.5"/>

@@ -182,6 +182,7 @@ $(function() {
         client.subscribe("ros/vision/tracked_position");
         client.subscribe("ros/odom");
 
+        $('#status').addClass('online').removeClass('offline');
     }
 
 // called when the client loses its connection
@@ -189,6 +190,8 @@ $(function() {
         if (responseObject.errorCode !== 0) {
             console.log("onConnectionLost:"+responseObject.errorMessage);
         }
+
+        $('#status').addClass('offline').removeClass('online');
     }
 
     $('#set-color').click(function() {
@@ -211,7 +214,7 @@ $(function() {
 
             //drawPixel(json['pose']['pose']['position']['x'] + 100, json['pose']['pose']['position']['z'] + 100, 100, 0, 0, 0, 1);
             //drawPixel(parseInt(canvas.width / 2 + json['pose']['pose']['position']['x']), canvas.height / 2 + parseInt(json['pose']['pose']['position']['y'] * 10));
-            drawPixel(-parseInt(json['pose']['pose']['position']['x'] * 1), -parseInt(json['pose']['pose']['position']['y'] * 1));
+            drawPixel(-parseInt(json['pose']['pose']['position']['x'] * 10), -parseInt(json['pose']['pose']['position']['y'] * 10));
 
         }
     }
