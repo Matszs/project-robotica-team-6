@@ -214,11 +214,19 @@ $(function() {
 
             //drawPixel(json['pose']['pose']['position']['x'] + 100, json['pose']['pose']['position']['z'] + 100, 100, 0, 0, 0, 1);
             //drawPixel(parseInt(canvas.width / 2 + json['pose']['pose']['position']['x']), canvas.height / 2 + parseInt(json['pose']['pose']['position']['y'] * 10));
-            drawPixel(-parseInt(json['pose']['pose']['position']['x'] * 10), -parseInt(json['pose']['pose']['position']['y'] * 10));
+            drawPixel(-parseInt(json['x'] * 30), -parseInt(json['y'] * 30));
 
         }
     }
 
+    var updateCanvasSize = function() {
+        ctx.canvas.width = (window.innerWidth * zoomValue);
+        ctx.canvas.height = (window.innerHeight * zoomValue);
+
+        ctx.translate(ctx.canvas.width/2,ctx.canvas.height/2);
+
+        draw();
+    };
 
 
     $('#zoom a[data-zoom]').click(function(e) {
@@ -235,13 +243,12 @@ $(function() {
         if(zoomValue > 1.6)
             zoomValue = 1.6;
 
-        ctx.canvas.width = (window.innerWidth * zoomValue);
-        ctx.canvas.height = (window.innerHeight * zoomValue);
+        updateCanvasSize();
 
-        ctx.translate(ctx.canvas.width/2,ctx.canvas.height/2);
+    });
 
-        draw();
-
+    $(window).resize(function() {
+        updateCanvasSize();
     });
 
 });

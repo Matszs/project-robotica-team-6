@@ -1,0 +1,4 @@
+<launch>
+	<node pkg="kobuki_mapper" type="kobuki_mapper" name="kobuki_mapper" output="screen" />
+</launch>
+
