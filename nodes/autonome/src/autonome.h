@@ -5,17 +5,19 @@
 #include <cstdlib>
 #include <ctime>
 
+#include <nav_msgs/Odometry.h>
 #include <geometry_msgs/Twist.h>
 #include <kobuki_msgs/BumperEvent.h>
 #include <kobuki_msgs/CliffEvent.h>
 #include <kobuki_msgs/Led.h>
 #include <kobuki_msgs/WheelDropEvent.h>
-#include <vision/TrackedPosition.h>
+
+#include <kobuki_mapper/GridPoint.h>
 
 #include <ros/ros.h>
 
-#define SPEED 0.3
-#define ANGLE 0.6
+#define SPEED 0.2
+#define ANGLE 0.5
 
 bool emergency_stop = false;
 bool stop = false;
@@ -31,6 +33,9 @@ private:
 	ros::Subscriber bumper_event_subscriber;
 	ros::Subscriber tracked_position_event_subscriber;
 	ros::Publisher velocity_publisher;
+	ros::Subscriber odom_subscriber;
+
+	ros::Publisher grid_publisher;
 
 	ros::Duration turning_duration;
     ros::Time turning_start;
@@ -45,6 +50,9 @@ private:
 	bool is_turning;
 	int turning_direction;
 
+	int positionXGrid;
+	int positionYGrid;
+
 
 public:
 
@@ -54,8 +62,8 @@ public:
 
     // events
     void cliffEvent(const kobuki_msgs::CliffEventConstPtr msg);
-    void trackedPositionEvent(const vision::TrackedPositionConstPtr& msg);
     void bumperEvent(const kobuki_msgs::BumperEventConstPtr msg);
+    void odomCallback(const nav_msgs::OdometryConstPtr& msg);
     void spin();
 
 };

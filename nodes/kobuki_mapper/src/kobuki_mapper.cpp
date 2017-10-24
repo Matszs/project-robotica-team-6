@@ -6,79 +6,84 @@
 
 #include <geometry_msgs/Twist.h>
 #include <nav_msgs/Odometry.h>
+#include <kobuki_mapper/GridPoint.h>
 #include <stdlib.h>
 
 #include <cstdio>
 
 using namespace std;
+using namespace kobuki_mapper; // instead of kobuki_mapper::GridPoint, we can use GridPoint
 
-ros::Publisher odom;
-std::vector<struct WayPoint> wayPointVector;
+ros::Publisher gridFieldPublisher;
+std::vector<GridPoint> grid;
 
-
-struct WayPoint{
-    string name;
-    bool poi;
-    geometry_msgs::Vector3 point;
-} ;
-
-
-
-bool closeToWayPoints(float x, float y, float offset) {
-
+int gridPositionIndex(int x, int y) {
 
     unsigned int i;
-    for (i=0; i<wayPointVector.size(); i++) {
-    //for (std::vector<WayPoint>::iterator it = wayPointVector.begin() ; it != wayPointVector.end(); ++it){
+    for (i = 0; i < grid.size(); i++) {
+        GridPoint gridPoint = grid.at(i);
 
-        WayPoint wayPoint = wayPointVector.at(i);
-
-        if(wayPointVector.size() > 3 && i < (wayPointVector.size() - 3))
-            continue;
-
-        int distanceX = (wayPoint.point.x - x) * (wayPoint.point.x - x);
-        int distanceY = (wayPoint.point.y - y) * (wayPoint.point.y - y);
-
-        if(sqrt(distanceX - distanceY) < offset)
-            return true;
+        if(gridPoint.x == x && gridPoint.y == y)
+            return i;
     }
 
-    return false;
+    return -1;
 }
 
-
-
 void odomCallback(const nav_msgs::OdometryConstPtr& msg) {
-    //ROS_INFO("x: [%f], y: [%f], z: [%f], ", msg->pose.pose.position.x, msg->pose.pose.position.y, msg->pose.pose.position.z);
+
+    float positionX = msg->pose.pose.position.x;
+    float positionY = msg->pose.pose.position.y;
+
+    int positionXGrid = (int)(positionX * 10);
+    int positionYGrid = (int)(positionY * 10);
 
 
-    //ROS_INFO("Xl = [%f], ", waypointVector.back().point.x);
-    ROS_INFO("Length: %lu", wayPointVector.size());
+    if(gridPositionIndex(positionXGrid, positionYGrid) == -1) {
 
-    float angularZ = abs(msg->twist.twist.angular.z);
-    float linearX = msg->twist.twist.linear.x;
+        ROS_INFO("gridX = %d, Y = %d", positionXGrid, positionYGrid);
 
-    if((linearX < 0.1 && angularZ > 0.4) || (linearX == 0 && angularZ == 0)){
+        // Add grid point
+        GridPoint gridPoint;
+        gridPoint.x = positionXGrid;
+        gridPoint.y = positionYGrid;
+        gridPoint.z = 0;
+        gridPoint.type = 1; // 1 = walkable, 0 = not walkable
 
-        //if(wayPointVector.size() == 0 || (wayPointVector.size() > 0 && wayPointVector.back().point.x != msg->pose.pose.position.x)){
-        if(!closeToWayPoints(msg->pose.pose.position.x, msg->pose.pose.position.y, 0.3)){
-            WayPoint wp;
+        grid.push_back(gridPoint);
+        gridFieldPublisher.publish(gridPoint);
+    }
+}
 
-            geometry_msgs::Vector3 odom_new;
-            odom_new.z = msg->pose.pose.position.z;
-            odom_new.y = msg->pose.pose.position.y;
-            odom_new.x = msg->pose.pose.position.x;
+void gridCallback(const GridPointConstPtr& msg) {
+    int positionXGrid = msg->x;
+    int positionYGrid = msg->y;
+    int type = msg->type;
 
-            wp.point = odom_new;
 
-            wayPointVector.push_back(wp);
+    int gridIndex = gridPositionIndex(positionXGrid, positionYGrid);
+    ROS_INFO("index %d", gridIndex);
+    if(gridIndex != -1) {
+        ROS_INFO("NEW: gridX = %d, Y = %d", positionXGrid, positionYGrid);
 
-            /*for (std::vector<Waypoint>::iterator it = waypointVector.begin() ; it != waypointVector.end(); ++it){
-            ROS_INFO("x = [%f]", it->point.x);
-            }*/
+        kobuki_mapper::GridPoint gridPoint;
+        gridPoint.x = positionXGrid;
+        gridPoint.y = positionYGrid;
+        gridPoint.z = 0;
+        gridPoint.type = type; // 1 = walkable, 0 = not walkable
 
-            odom.publish(odom_new);
-        }
+        grid.push_back(gridPoint);
+        gridFieldPublisher.publish(gridPoint); // publish on /grid_field
+
+    } else {
+        ROS_INFO("UPDATE: gridX = %d, Y = %d", positionXGrid, positionYGrid);
+
+        GridPoint gridPoint = grid[gridIndex];
+        gridPoint.type = type;
+        grid[gridIndex] = gridPoint;
+
+        gridFieldPublisher.publish(gridPoint); // publish on /grid_field
+
     }
 }
 
@@ -90,11 +95,11 @@ int main(int argc, char **argv) {
 
 	ros::NodeHandle n;
 	ros::Subscriber odom_sub = n.subscribe("/odom", 100, odomCallback);
-	odom = n.advertise<geometry_msgs::Vector3>("/new_odom", 100);
 
+	gridFieldPublisher = n.advertise<GridPoint>("/grid_field", 100);
+	ros::Subscriber gridFeedback = n.subscribe("/grid", 100, gridCallback);
 
     ros::spin();
-
 
 	ROS_INFO("Exiting the node");
 	return 0;

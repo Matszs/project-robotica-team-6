@@ -1,9 +1,0 @@
-<library path="lib/libkobuki_drive_nodelet">
-  <class name="kobuki_drive/DriveControllerNodelet"
-         type="kobuki::DriveControllerNodelet"
-         base_class_type="nodelet::Nodelet">
-    <description>
-      Nodelet the Kobuki's random walker controller
-    </description>
-  </class>
-</library>

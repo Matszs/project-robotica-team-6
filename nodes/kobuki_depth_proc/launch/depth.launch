@@ -1,0 +1,4 @@
+<launch>
+	<node pkg="kobuki_depth_proc" type="kobuki_depth_proc" name="kobuki_depth_proc" output="screen" />
+</launch>
+

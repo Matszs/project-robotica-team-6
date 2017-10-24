@@ -16,23 +16,28 @@ void Autonome::init() {
     ROS_INFO("Autonome:: initalization started.");
 
     bumper_event_subscriber = nodeHandler.subscribe("/mobile_base/events/bumper", 10, &Autonome::bumperEvent, this);
-    tracked_position_event_subscriber = nodeHandler.subscribe("/vision/tracked_position", 10, &Autonome::trackedPositionEvent, this);
     velocity_publisher = nodeHandler.advertise<geometry_msgs::Twist>("/mobile_base/commands/velocity", 10);
+    grid_publisher = nodeHandler.advertise<kobuki_mapper::GridPoint>("/grid", 10);
+    odom_subscriber = nodeHandler.subscribe("/odom", 100, &Autonome::odomCallback, this);
 
     ROS_INFO("Autonome:: initalization done.");
+
+}
+
+void Autonome::odomCallback(const nav_msgs::OdometryConstPtr& msg) {
+
+    float positionX = msg->pose.pose.position.x;
+    float positionY = msg->pose.pose.position.y;
+    float rotation = msg->pose.pose.orientation.z;
+
+    positionXGrid = (int)(positionX * 10);
+    positionYGrid = (int)(positionY * 10);
 
 }
 
 void Autonome::cliffEvent(const kobuki_msgs::CliffEventConstPtr msg) {
     ROS_INFO("Autonome:: cliffEvent trigger.");
     ROS_INFO("Autonome:: state: %d", msg->state);
-}
-
-void Autonome::trackedPositionEvent(const vision::TrackedPositionConstPtr& msg) {
-
-    ROS_INFO("Autonome:: trackedPosition trigger.");
-    ROS_INFO("x: [%f], y: [%f], z: [%f], ", -msg->x * 2, -msg->y, -msg->z);
-
 }
 
 void Autonome::bumperEvent(const kobuki_msgs::BumperEventConstPtr msg) {
@@ -110,9 +115,16 @@ void Autonome::spin() {
     }
 
     if(change_direction) {
+        // drive a bit backwards
+        cmd_vel_msg_ptr->linear.x = -SPEED;
+        velocity_publisher.publish(cmd_vel_msg_ptr);
+
         change_direction = false;
 
-        turning_duration = ros::Duration(((double)std::rand() / (double)RAND_MAX) * (M_PI / ANGLE));
+        //turning_duration = ros::Duration(((double)std::rand() / (double)RAND_MAX) * (M_PI / ANGLE));
+        turning_duration = ros::Duration(1 * (M_PI / ANGLE));
+
+        //ROS_INFO_STREAM("RANDOM: " << ((double)std::rand() / (double)RAND_MAX));
 
         /*if (((double)std::rand() / (double)RAND_MAX) >= 0.5) {
             turning_direction = 1;
@@ -123,11 +135,20 @@ void Autonome::spin() {
         ROS_INFO_STREAM("Bumper: " << (last_pressed_bumper == B_LEFT ? "left" : "not left"));
         ROS_INFO_STREAM("Bumper: " << (last_pressed_bumper == B_RIGHT ? "right" : "not right"));
 
+
+
         if(last_pressed_bumper == B_LEFT) {
             turning_direction = 1;
         } else if(last_pressed_bumper == B_RIGHT) {
             turning_direction = -1;
         }
+
+        kobuki_mapper::GridPoint gridPoint;
+        gridPoint.x = positionXGrid;
+        gridPoint.y = positionYGrid;
+        gridPoint.type = 0;
+        grid_publisher.publish(gridPoint);
+
 
         turning_start = ros::Time::now();
 

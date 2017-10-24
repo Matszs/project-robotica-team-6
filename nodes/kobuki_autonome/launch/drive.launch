@@ -1,6 +1,0 @@
-<launch>
-  <node pkg="nodelet" type="nodelet" name="drive_controller" args="load kobuki_autonome/DriveControllerNodelet mobile_base_nodelet_manager">
-    <remap from="drive_controller/events/bumper" to="mobile_base/events/bumper"/>
-    <remap from="drive_controller/commands/led1" to="mobile_base/commands/led1"/>
-  </node>
-</launch>

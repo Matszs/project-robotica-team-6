@@ -1,0 +1,147 @@
+var gridBlocks = [];
+var getCoordinatesFromMousePosition;
+
+var drawGrid;
+var gridToCenter;
+var centerToGrid;
+
+
+
+$(function() {
+
+    var canvas = document.getElementById("canvas");
+    var canvasWidth = window.innerWidth;
+    var canvasHeight = window.innerHeight;
+    ctx = canvas.getContext("2d");
+    var canvasData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+    var dots = [];
+    var img = new Image();
+    img.src = "/img/kobuki.png";
+    var gridSize = 15;
+
+    ctx.canvas.width = canvasWidth;
+    ctx.canvas.height = canvasHeight;
+
+    gridToCenter = function(x, y) {
+
+    };
+
+    // example x = 0, y = 0
+    centerToGrid = function(x, y) {
+        var centerPoint = getCoordinatesFromMousePosition((ctx.canvas.width / 2), (ctx.canvas.height / 2));
+
+        return {
+            'x': centerPoint['x'] + x,
+            'y': centerPoint['y'] + y
+        };
+    };
+
+    var draw = function() {
+
+    };
+
+    drawGrid = function() {
+
+        var canvasWidth = ctx.canvas.width;
+        var canvasHeight = ctx.canvas.height;
+
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+        ctx.beginPath();
+
+        for(var i = 0; i < (canvasHeight / gridSize); i++) {
+            for(var j = 0; j < (canvasWidth / gridSize); j++) {
+                ctx.rect(j * gridSize, i * gridSize, gridSize, gridSize);
+            }
+        }
+
+        ctx.lineWidth = 0.5;
+        ctx.strokeStyle = "#c8c5bb";
+        ctx.stroke();
+
+
+
+        for(var gridBlockIndex in gridBlocks) {
+            var gridBlock = gridBlocks[gridBlockIndex];
+
+            ctx.beginPath();
+            ctx.rect(gridBlock.x * gridSize, gridBlock.y * gridSize, gridSize, gridSize);
+
+            ctx.fillStyle = (gridBlock['type'] === 1 ? "#50D050" : "#f61f1f");
+            ctx.fill();
+            ctx.strokeStyle = (gridBlock['type'] === 1 ? "#50D050" : "#f61f1f");
+            ctx.stroke();
+        }
+
+    };
+
+    drawGrid();
+
+
+
+    var drawPixel = function(x, y) {
+        addedX = x;
+        addedY = y;
+
+        dots.push({'x' : x, 'y' : y});
+        draw();
+    };
+
+
+
+    var updateCanvasSize = function() {
+        ctx.canvas.width = (window.innerWidth * zoomValue);
+        ctx.canvas.height = (window.innerHeight * zoomValue);
+
+        draw();
+        drawGrid();
+    };
+
+
+    $('#zoom a[data-zoom]').click(function(e) {
+        e.preventDefault();
+
+        var value = parseFloat($(this).attr('data-zoom'));
+
+        zoomValue = zoomValue + value;
+        if(value === 0)
+            zoomValue = 1;
+
+        if(zoomValue < 0.4)
+            zoomValue = 0.4;
+        if(zoomValue > 1.6)
+            zoomValue = 1.6;
+
+        updateCanvasSize();
+
+    });
+
+    $(window).resize(function() {
+        updateCanvasSize();
+    });
+
+    getCoordinatesFromMousePosition = function(mouseX, mouseY) {
+        return {
+            'x': Math.floor(mouseX / (gridSize)),
+            'y': Math.floor(mouseY / (gridSize))
+        };
+    };
+
+
+    $('canvas').click(function(e) {
+
+        var xPosition = e.clientX;
+        var yPosition = e.clientY;
+
+        var selectedGrid = getCoordinatesFromMousePosition(xPosition, yPosition);
+
+        gridBlocks.push({
+            'x': selectedGrid.x,
+            'y': selectedGrid.y,
+            'type': 0
+        });
+
+        drawGrid();
+    });
+
+});

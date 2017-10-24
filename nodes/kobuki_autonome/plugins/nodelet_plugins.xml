@@ -1,7 +1,0 @@
-<library path="lib/libdrive_controller_nodelet">
-    <class name="kobuki_autonome/DriveControllerNodelet" type="kobuki::DriveControllerNodelet" base_class_type="nodelet::Nodelet">
-        <description>
-            Nodelet for a simple blink when bump controller
-        </description>
-    </class>
-</library>
