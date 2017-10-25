@@ -11,6 +11,8 @@ void Autonome::init() {
     turning_direction = 1;
 
     last_pressed_bumper = B_NONE;
+    rotateTo = 0;
+    currentRotation = 0;
 
     // Start publishers/subcribers
     ROS_INFO("Autonome:: initalization started.");
@@ -33,11 +35,8 @@ void Autonome::odomCallback(const nav_msgs::OdometryConstPtr& msg) {
     positionXGrid = (int)(positionX * 10);
     positionYGrid = (int)(positionY * 10);
 
-}
+    currentRotation = rotation;
 
-void Autonome::cliffEvent(const kobuki_msgs::CliffEventConstPtr msg) {
-    ROS_INFO("Autonome:: cliffEvent trigger.");
-    ROS_INFO("Autonome:: state: %d", msg->state);
 }
 
 void Autonome::bumperEvent(const kobuki_msgs::BumperEventConstPtr msg) {
@@ -76,7 +75,6 @@ void Autonome::bumperEvent(const kobuki_msgs::BumperEventConstPtr msg) {
         }
 
     } else {
-        ROS_INFO("Autonome:: NO PRESSURE!");
         switch (msg->bumper) {
             case kobuki_msgs::BumperEvent::LEFT:
                 left_bumper_pressed = false;
@@ -115,62 +113,64 @@ void Autonome::spin() {
     }
 
     if(change_direction) {
-        // drive a bit backwards
-        cmd_vel_msg_ptr->linear.x = -SPEED;
-        velocity_publisher.publish(cmd_vel_msg_ptr);
 
-        change_direction = false;
-
-        //turning_duration = ros::Duration(((double)std::rand() / (double)RAND_MAX) * (M_PI / ANGLE));
-        turning_duration = ros::Duration(1 * (M_PI / ANGLE));
-
-        //ROS_INFO_STREAM("RANDOM: " << ((double)std::rand() / (double)RAND_MAX));
-
-        /*if (((double)std::rand() / (double)RAND_MAX) >= 0.5) {
-            turning_direction = 1;
-        } else {
-            turning_direction = -1;
-        }*/
-
-        ROS_INFO_STREAM("Bumper: " << (last_pressed_bumper == B_LEFT ? "left" : "not left"));
-        ROS_INFO_STREAM("Bumper: " << (last_pressed_bumper == B_RIGHT ? "right" : "not right"));
-
-
-
-        if(last_pressed_bumper == B_LEFT) {
-            turning_direction = 1;
-        } else if(last_pressed_bumper == B_RIGHT) {
-            turning_direction = -1;
-        }
-
+        // add current location as a wall to the grid.
         kobuki_mapper::GridPoint gridPoint;
         gridPoint.x = positionXGrid;
         gridPoint.y = positionYGrid;
         gridPoint.type = 0;
         grid_publisher.publish(gridPoint);
 
+        // drive a bit backwards
+        cmd_vel_msg_ptr->linear.x = -SPEED;
+        velocity_publisher.publish(cmd_vel_msg_ptr);
 
-        turning_start = ros::Time::now();
+        // Get out of this if-statement after
+        change_direction = false;
 
+        // Find out which direction to rotate to.
+        if(last_pressed_bumper == B_LEFT) {
+            turning_direction = -1;
+        } else if(last_pressed_bumper == B_RIGHT) {
+            turning_direction = 1;
+        }
+
+        // set rotation
+        rotateTo = currentRotation + (turning_direction * 0.5);
+        //rotateTo = -currentRotation; // test inverting
+        ROS_INFO_STREAM("currentRotation: " << currentRotation);
+        ROS_INFO_STREAM("rotateTo: " << rotateTo);
+
+        if(rotateTo > 1)
+            rotateTo = -(2 - rotateTo);
+        if(rotateTo < -1)
+            rotateTo = (2 + rotateTo);
+
+        ROS_INFO_STREAM("rotateTo: " << rotateTo);
+        ROS_INFO_STREAM("direction: " << turning_direction);
+
+        // Set the variable so the robot knows it has to rotate.
         is_turning = true;
-        ROS_INFO_STREAM("Will rotate " << turning_direction * turning_duration.toSec() * ANGLE / M_PI * 180 << " degrees.");
     }
 
     if(is_turning) {
-        if ((ros::Time::now() - turning_start) < turning_duration) {
+        // check if we are in range of the 'destination' rotation.
+        if(currentRotation > (rotateTo - 0.1) && currentRotation < (rotateTo + 0.1)) {
+            is_turning = false;
+            ROS_INFO_STREAM("Rotation done.");
+        } else {
             cmd_vel_msg_ptr->angular.z = turning_direction * ANGLE;
             velocity_publisher.publish(cmd_vel_msg_ptr);
 
             ROS_INFO_STREAM("rotate " << turning_direction * ANGLE);
-        } else {
-            is_turning = false;
+            ROS_INFO_STREAM("currentRotation #2: " << currentRotation);
         }
+
     } else { // drive forward
         cmd_vel_msg_ptr->linear.x = SPEED;
         velocity_publisher.publish(cmd_vel_msg_ptr);
     }
 }
-
 
 
 

@@ -78,11 +78,13 @@ void gridCallback(const GridPointConstPtr& msg) {
     } else {
         ROS_INFO("UPDATE: gridX = %d, Y = %d", positionXGrid, positionYGrid);
 
-        GridPoint gridPoint = grid[gridIndex];
+        GridPoint gridPoint;
+        gridPoint.x = positionXGrid;
+        gridPoint.y = positionYGrid;
         gridPoint.type = type;
-        grid[gridIndex] = gridPoint;
+        //grid[gridIndex] = gridPoint;
 
-        gridFieldPublisher.publish(gridPoint); // publish on /grid_field
+        gridFieldPublisher.publish(gridPoint); // publish on /grid_field*/
 
     }
 }

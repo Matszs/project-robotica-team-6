@@ -114,6 +114,8 @@ public:
 			img_lines_color = Mat::zeros(480, 640, CV_8UC3);
 		}
 
+		ROS_INFO_STREAM("loopCount " << loopCount);
+
 		// Convert image for use with OpenCV
 		cv_bridge::CvImagePtr cv_ptr;
 		try {

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(kobuki_depth_proc)
+project(kobuki_depth)
 
 find_package(catkin REQUIRED COMPONENTS
         roscpp
@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
         image_transport
         cv_bridge
         pcl_msgs
+        kobuki_mapper
 )
 
 
@@ -27,6 +28,6 @@ catkin_package(
         CATKIN_DEPENDS roscpp std_msgs sensor_msgs pcl_msgs DEPENDS PCL
 )
 
-add_executable(kobuki_depth_proc src/kobuki_depth_proc.cpp)
-target_link_libraries(kobuki_depth_proc ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
+add_executable(kobuki_depth src/kobuki_depth.cpp)
+target_link_libraries(kobuki_depth ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 

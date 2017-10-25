@@ -1,0 +1,5 @@
+<launch>
+	<include file="$(find astra_launch)/launch/astra.launch" />
+	<node pkg="kobuki_depth" type="kobuki_depth" name="kobuki_depth" output="screen" />
+</launch>
+
