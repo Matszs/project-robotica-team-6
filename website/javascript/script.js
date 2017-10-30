@@ -1,5 +1,8 @@
 var client;
+var ctx;
 
+var addedX, addedY;
+var zoomValue = 1;
 
 
 function hex2rgb(hex) {
@@ -58,28 +61,108 @@ function hex2hsb(hex1){
 $(function() {
 
     var canvas = document.getElementById("canvas");
-    var canvasWidth = canvas.width;
-    var canvasHeight = canvas.height;
-    var ctx = canvas.getContext("2d");
+    var canvasWidth = window.innerWidth;
+    var canvasHeight = window.innerHeight;
+    ctx = canvas.getContext("2d");
     var canvasData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+    var dots = [];
+    var img = new Image();
+    img.src = "/img/kobuki.png";
 
-// That's how you define the value of a pixel //
-    function drawPixel (x, y, r, g, b, a) {
-        var index = (x + y * canvasWidth) * 4;
+    ctx.canvas.width = canvasWidth;
+    ctx.canvas.height = canvasHeight;
 
-        canvasData.data[index + 0] = r;
-        canvasData.data[index + 1] = g;
-        canvasData.data[index + 2] = b;
-        canvasData.data[index + 3] = a;
+    ctx.translate(canvas.width/2,canvas.height/2);
+
+    console.log(canvasWidth);
+    console.log(canvasHeight);
+
+    var draw = function() {
+        var x = addedX;
+        var y = addedY;
+
+        ctx.clearRect(-canvasWidth, -canvasHeight, canvasWidth * 2, canvasHeight * 2);
+        var lastX, lastY, angle;
+        var headlen = 10;   // length of head in pixels
+
+        for(var dotIndex in dots) {
+            if(dotIndex == (dots.length - 1))
+                continue;
+            var dot = dots[dotIndex];
+
+            ctx.beginPath();
+            ctx.arc(dot['x'], dot['y'], 4, 0, 2 * Math.PI, false);
+            ctx.fillStyle = '#ff0000';
+            ctx.fill();
+
+            if(typeof(lastX) !== 'undefined' && typeof(lastY) !== 'undefined') {
+
+                angle = Math.atan2(dot['y'] - lastY, dot['x'] - lastX);
+
+                ctx.strokeStyle = '#72d8ff';
+                ctx.lineWidth = 3;
+
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(dot['x'], dot['y']);
+                ctx.lineTo(dot['x'] - headlen * Math.cos(angle - Math.PI / 6), dot['y'] - headlen * Math.sin(angle - Math.PI / 6));
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(dot['x'], dot['y']);
+                ctx.lineTo(dot['x'] - headlen * Math.cos(angle + Math.PI / 6), dot['y'] - headlen * Math.sin(angle + Math.PI / 6));
+                ctx.stroke();
+
+            }
+
+            lastX = dot['x'];
+            lastY = dot['y'];
+        }
+
+        ctx.beginPath();
+        ctx.drawImage(img, 0, 0, 307, 307, (x - 15), (y - 15), 30, 30);
+
+        if(typeof(lastX) !== 'undefined' && typeof(lastY) !== 'undefined') {
+
+            angle = Math.atan2(y - lastY, x - lastX);
+
+            ctx.strokeStyle = '#72d8ff';
+            ctx.lineWidth = 3;
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.lineTo(x - headlen * Math.cos(angle - Math.PI / 6), y - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - headlen * Math.cos(angle + Math.PI / 6), y - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.stroke();
+
+            ctx.font = "20px Arial";
+            ctx.fontStyle = '#ff363b';
+            var degrees = parseInt(angle * (180 / Math.PI));
+            if(degrees < 0)
+                degrees += 360;
+            degrees += 90;
+            if(degrees > 360)
+                degrees -= 360;
+
+            ctx.fillText(degrees + " °", x + 20, y + 20);
+            $('#text-degrees').text(degrees + " °");
+
+        }
+
+
+    };
+
+    function drawPixel (x, y) {
+        addedX = x;
+        addedY = y;
+
+        dots.push({'x' : x, 'y' : y});
+        draw();
     }
-
-// That's how you update the canvas, so that your //
-// modification are taken in consideration //
-    function updateCanvas() {
-        ctx.putImageData(canvasData, 0, 0);
-    }
-
-
 
     // Create a client instance
     client = new Paho.MQTT.Client("ws.derfu.nl/ws/", 80, "clientId"+Math.floor((Math.random() * 10) + 1));
@@ -99,6 +182,7 @@ $(function() {
         client.subscribe("ros/vision/tracked_position");
         client.subscribe("ros/odom");
 
+        $('#status').addClass('online').removeClass('offline');
     }
 
 // called when the client loses its connection
@@ -106,6 +190,8 @@ $(function() {
         if (responseObject.errorCode !== 0) {
             console.log("onConnectionLost:"+responseObject.errorMessage);
         }
+
+        $('#status').addClass('offline').removeClass('online');
     }
 
     $('#set-color').click(function() {
@@ -127,15 +213,36 @@ $(function() {
         if(message.destinationName == 'ros/odom') {
 
             //drawPixel(json['pose']['pose']['position']['x'] + 100, json['pose']['pose']['position']['z'] + 100, 100, 0, 0, 0, 1);
-            drawPixel(parseInt(json['pose']['pose']['position']['x'] * 10) + 100, parseInt(json['pose']['pose']['position']['y'] * 10) + 100, 255, 0, 0, 255);
-            updateCanvas();
+            //drawPixel(parseInt(canvas.width / 2 + json['pose']['pose']['position']['x']), canvas.height / 2 + parseInt(json['pose']['pose']['position']['y'] * 10));
+            drawPixel(-parseInt(json['pose']['pose']['position']['x'] * 10), -parseInt(json['pose']['pose']['position']['y'] * 10));
 
         }
     }
 
 
 
+    $('#zoom a[data-zoom]').click(function(e) {
+        e.preventDefault();
 
+        var value = parseFloat($(this).attr('data-zoom'));
+
+        zoomValue = zoomValue + value;
+        if(value === 0)
+            zoomValue = 1;
+
+        if(zoomValue < 0.4)
+            zoomValue = 0.4;
+        if(zoomValue > 1.6)
+            zoomValue = 1.6;
+
+        ctx.canvas.width = (window.innerWidth * zoomValue);
+        ctx.canvas.height = (window.innerHeight * zoomValue);
+
+        ctx.translate(ctx.canvas.width/2,ctx.canvas.height/2);
+
+        draw();
+
+    });
 
 });
 
