@@ -2,8 +2,10 @@ var gridBlocks = [];
 var getCoordinatesFromMousePosition;
 
 var drawGrid;
+var drawLocation;
 var gridToCenter;
 var centerToGrid;
+var locationX, locationY;
 
 
 
@@ -17,7 +19,7 @@ $(function() {
     var dots = [];
     var img = new Image();
     img.src = "/img/kobuki.png";
-    var gridSize = 15;
+    var gridSize = 10;
 
     ctx.canvas.width = canvasWidth;
     ctx.canvas.height = canvasHeight;
@@ -73,6 +75,22 @@ $(function() {
             ctx.stroke();
         }
 
+        drawLocation();
+    };
+
+    drawLocation = function(x, y) {
+        if(typeof(x) !== 'undefined')
+            locationX = x;
+        if(typeof(y) !== 'undefined')
+            locationY = y;
+
+        ctx.beginPath();
+        ctx.rect(locationX * gridSize, locationY * gridSize, gridSize, gridSize);
+
+        ctx.fillStyle = "#000000";
+        ctx.fill();
+        ctx.strokeStyle = "#000000";
+        ctx.stroke();
     };
 
     drawGrid();

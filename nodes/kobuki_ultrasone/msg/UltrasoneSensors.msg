@@ -1,0 +1,4 @@
+int16 sensor1_distance
+int16 sensor2_distance
+int16 sensor3_distance
+int16 sensor4_distance

@@ -32,8 +32,8 @@ void Autonome::odomCallback(const nav_msgs::OdometryConstPtr& msg) {
     float positionY = msg->pose.pose.position.y;
     float rotation = msg->pose.pose.orientation.z;
 
-    positionXGrid = (int)(positionX * 10);
-    positionYGrid = (int)(positionY * 10);
+    positionXGrid = (int)(-positionY * 10);
+    positionYGrid = (int)(positionX * 10);
 
     currentRotation = rotation;
 

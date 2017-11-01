@@ -17,6 +17,7 @@ $(function() {
         // Once a connection has been made, make a subscription and send a message.
         console.log("onConnect");
         client.subscribe("ros/grid_field");
+        client.subscribe("ros/location");
 
         $('#status').addClass('online').removeClass('offline');
     }
@@ -46,9 +47,11 @@ $(function() {
         //console.log("onMessageArrived:"+message.payloadString);
         var json = jQuery.parseJSON( message.payloadString );
 
+        console.log(json);
+
         if(message.destinationName == 'ros/grid_field') {
 
-            var selectedGrid = centerToGrid(-parseInt(json['x']), -parseInt(json['y']));
+            var selectedGrid = centerToGrid(parseInt(json['x']), parseInt(json['y']));
 
             gridBlocks.push({
                 'x': selectedGrid.x,
@@ -58,6 +61,13 @@ $(function() {
 
             drawGrid();
 
+        }
+
+        if(message.destinationName == 'ros/location') {
+            var selectedGrid = centerToGrid(parseInt(json['x']), parseInt(json['y']));
+
+            drawLocation(selectedGrid.x, selectedGrid.y);
+            drawGrid();
         }
     }
 

@@ -1,0 +1,4 @@
+<launch>
+	<node pkg="kobuki_ultrasone" type="kobuki_ultrasone" name="kobuki_ultrasone" output="screen" />
+</launch>
+

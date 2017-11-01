@@ -13,6 +13,11 @@ find_package(catkin REQUIRED COMPONENTS
         kobuki_mapper
 )
 
+add_message_files(
+        FILES
+        CameraPoint.msg
+)
+
 
 find_package(OpenCV REQUIRED)
 find_package(PCL REQUIRED COMPONENTS)
@@ -24,8 +29,13 @@ include_directories(
         ${PCL_INCLUDE_DIRS}
 )
 
+generate_messages(
+        DEPENDENCIES
+        std_msgs
+)
+
 catkin_package(
-        CATKIN_DEPENDS roscpp std_msgs sensor_msgs pcl_msgs DEPENDS PCL
+        CATKIN_DEPENDS roscpp std_msgs sensor_msgs pcl_msgs message_runtime DEPENDS PCL
 )
 
 add_executable(kobuki_depth src/kobuki_depth.cpp)

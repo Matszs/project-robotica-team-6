@@ -16,6 +16,7 @@
 #include <message_filters/subscriber.h>
 
 #include <kobuki_mapper/GridPoint.h>
+#include <kobuki_depth/CameraPoint.h>
 
 #include <pcl/conversions.h>
 #include <pcl_ros/point_cloud.h>
@@ -37,25 +38,16 @@ private:
     message_filters::Subscriber<PointCloud2> pcl_sub;
     typedef sync_policies::ApproximateTime<Image, PointCloud2> sync_policy;
     Synchronizer<sync_policy> sync;
-    ros::Subscriber odom_subscriber;
-    ros::Publisher grid_publisher;
+    ros::Publisher camera_publisher;
 
 	Mat img_lines_color;
-
-    int positionXGrid;
-    int positionYGrid;
-
-    float currentRotation;
-    float degrees;
 
 public:
 	Depth() : rgb_image_sub(nh, "/camera/rgb/image_rect_color", 1), pcl_sub(nh, "/camera/depth_registered/points", 1), sync(sync_policy(10), rgb_image_sub, pcl_sub) {
 		ROS_INFO("Kobuki_depth constructor");
 
 		img_lines_color = Mat::zeros(480, 640, CV_8UC3);
-        odom_subscriber = nh.subscribe("/odom", 100, &Depth::odomCallback, this);
-        grid_publisher = nh.advertise<kobuki_mapper::GridPoint>("/grid", 10);
-
+        camera_publisher = nh.advertise<kobuki_depth::CameraPoint>("/camera_points", 10);
 	    sync.registerCallback(boost::bind(&Depth::cameraCallback, this, _1, _2));
 	}
 
@@ -63,7 +55,7 @@ public:
 		ROS_INFO("Kobuki_depth destructor");
 	}
 
-	void odomCallback(const nav_msgs::OdometryConstPtr& msg) {
+	/*void odomCallback(const nav_msgs::OdometryConstPtr& msg) {
 
         float positionX = msg->pose.pose.position.x;
         float positionY = msg->pose.pose.position.y;
@@ -80,9 +72,9 @@ public:
         degrees = (degrees > 0 ? 360 - (360 * degrees / 2) : 360 * abs(degrees) / 2);
 
 
-        ROS_INFO_STREAM("Degrees: " << degrees);
+        //ROS_INFO_STREAM("Degrees: " << degrees);
 
-    }
+    }*/
 
 	/**
 	 * Callback that is executed if there is a camera image and point cloud data available. This data is used to
@@ -125,22 +117,33 @@ public:
 
             pcl::PointXYZ p = pc.at(x, s.height / 2);
 
-            if (!isnan(p.z)) {
+            //ROS_INFO_STREAM("Location depth " << i << ": " << p.z);
+
+            //if (!isnan(p.z)) {
                 if(i == 25) {
-                    if(degrees > 340 || degrees < 20) {
+                    //if(degrees > 340 || degrees < 20) {
 
                         // add current location as a wall to the grid.
-                        kobuki_mapper::GridPoint gridPoint;
+                        /*kobuki_mapper::GridPoint gridPoint;
                         gridPoint.x = positionXGrid + (p.z * 10);
                         gridPoint.y = positionYGrid;
                         gridPoint.type = 0;
-                        grid_publisher.publish(gridPoint);
+                        grid_publisher.publish(gridPoint);*/
+
+
+
+                        kobuki_depth::CameraPoint cameraPoint;
+                        cameraPoint.x = p.x;
+                        cameraPoint.y = p.y;
+                        cameraPoint.z = p.z;
+
+                        camera_publisher.publish(cameraPoint);
 
                         ROS_INFO_STREAM("Location depth " << i << ": " << p.z);
 
-                    }
+                    //}
                 }
-            }
+           //}
 
 
 
