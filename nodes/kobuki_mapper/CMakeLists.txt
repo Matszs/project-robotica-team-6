@@ -30,9 +30,8 @@ catkin_package(
         CATKIN_DEPENDS roscpp std_msgs nav_msgs geometry_msgs message_runtime
 )
 
-#add_dependencies(kobuki_mapper kobuki_mapper_generate_messages_cpp)
-#add_dependencies(mapper ${catkin_EXPORTED_TARGETS})
+add_compile_options(-std=c++11)
 
-add_executable(kobuki_mapper src/kobuki_mapper.cpp)
+add_executable(kobuki_mapper src/kobuki_mapper.cpp src/robot.cpp)
 target_link_libraries(kobuki_mapper ${catkin_LIBRARIES})
 

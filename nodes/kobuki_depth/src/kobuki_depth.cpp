@@ -104,12 +104,26 @@ public:
 
 		Size s = img_HSV.size();
 
-		imwrite( "/home/turtlebot6/workspace/abc.jpg", img_HSV );
+		imwrite( "/home/kobuki6/workspace/abc.jpg", img_HSV );
 
 		pcl::PointCloud<pcl::PointXYZ> pc;
 		pcl::fromROSMsg(*pcl, pc);
 
-		int i;
+
+		pcl::PointXYZ p = pc.at(s.width / 2, s.height / 2);
+
+		kobuki_depth::CameraPoint cameraPoint;
+        cameraPoint.x = p.x;
+        cameraPoint.y = p.y;
+        cameraPoint.z = p.z;
+
+        camera_publisher.publish(cameraPoint);
+
+        ROS_INFO_STREAM("Location depth: " << p.z);
+
+
+
+		/*int i;
 		int steps = 50;
 		for(i = 0; i < steps; i++) {
 
@@ -124,11 +138,11 @@ public:
                     //if(degrees > 340 || degrees < 20) {
 
                         // add current location as a wall to the grid.
-                        /*kobuki_mapper::GridPoint gridPoint;
+                        *//*kobuki_mapper::GridPoint gridPoint;
                         gridPoint.x = positionXGrid + (p.z * 10);
                         gridPoint.y = positionYGrid;
                         gridPoint.type = 0;
-                        grid_publisher.publish(gridPoint);*/
+                        grid_publisher.publish(gridPoint);*//*
 
 
 
@@ -151,7 +165,7 @@ public:
 
             //ROS_INFO_STREAM("Location depth " << i << ": " << p.z);
 
-        }
+        }*/
 
         /*if (!isnan(p.z)) {
             ROS_INFO_STREAM("><>");

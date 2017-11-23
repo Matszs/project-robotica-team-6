@@ -13,6 +13,8 @@
 #include <kobuki_msgs/WheelDropEvent.h>
 
 #include <kobuki_mapper/GridPoint.h>
+#include <kobuki_depth/CameraPoint.h>
+#include <kobuki_ultrasone/UltrasoneSensors.h>
 
 #include <ros/ros.h>
 
@@ -32,6 +34,9 @@ class Autonome {
 private:
     enum bumper_states { B_LEFT, B_CENTER, B_RIGHT, B_NONE };
 
+    float positionToReach;
+    bool isReached;
+    bool isPositionSet;
 
 	ros::NodeHandle nodeHandler;
 	ros::Subscriber cliff_event_subscriber;
@@ -39,7 +44,8 @@ private:
 	ros::Subscriber tracked_position_event_subscriber;
 	ros::Publisher velocity_publisher;
 	ros::Subscriber odom_subscriber;
-
+    ros::Subscriber cameraPoints;
+    ros::Subscriber ultraPoints;
 	ros::Publisher grid_publisher;
 
 	ros::Duration turning_duration;
@@ -54,12 +60,34 @@ private:
 	bool change_direction;
 	bool is_turning;
 	int turning_direction;
+	bool changeDegrees;
 
 	int positionXGrid;
 	int positionYGrid;
 
 	float rotateTo;
 	float currentRotation;
+	float degrees;
+
+	float cameraDistance;
+	int ultra_right;
+	int ultra_front;
+
+    int status;
+    int degrees_start;
+
+	float camera_distance_set;
+
+	int highestValue;
+	int highestIndex;
+
+	float degreesDistance[361];
+	std::vector<int> nanNumbers;
+
+	int degreesToRideTo;
+	int degreesFrom;
+
+	int rotationCounter;
 
 
 public:
@@ -68,10 +96,14 @@ public:
     void run();
 
 
+    void makeThreeSixty();
+
     // events
     void cliffEvent(const kobuki_msgs::CliffEventConstPtr msg);
     void bumperEvent(const kobuki_msgs::BumperEventConstPtr msg);
     void odomCallback(const nav_msgs::OdometryConstPtr& msg);
+    void cameraPointsCallback(const kobuki_depth::CameraPointConstPtr& msg);
+    void ultrasoneSensorsCallback(const kobuki_ultrasone::UltrasoneSensorsConstPtr& msg);
     void spin();
 
 };

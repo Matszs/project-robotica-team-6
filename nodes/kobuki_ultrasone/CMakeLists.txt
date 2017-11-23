@@ -9,6 +9,10 @@ find_package(catkin REQUIRED COMPONENTS
         kobuki_mapper
 )
 
+include_directories(
+        ${catkin_INCLUDE_DIRS}
+)
+
 add_message_files(
     FILES
     UltrasoneSensors.msg

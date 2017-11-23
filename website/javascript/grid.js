@@ -6,10 +6,23 @@ var drawLocation;
 var gridToCenter;
 var centerToGrid;
 var locationX, locationY;
+var updateCanvasSize;
 
 
 
 $(function() {
+
+    updateCanvasSize = function() {
+        var height = (window.innerHeight * zoomValue);
+        var width = (window.innerWidth * zoomValue);
+
+        ctx.canvas.width = width;
+        ctx.canvas.height = height;
+
+        if(typeof(drawGrid) === 'function')
+            drawGrid();
+
+    };
 
     var canvas = document.getElementById("canvas");
     var canvasWidth = window.innerWidth;
@@ -21,8 +34,7 @@ $(function() {
     img.src = "/img/kobuki.png";
     var gridSize = 10;
 
-    ctx.canvas.width = canvasWidth;
-    ctx.canvas.height = canvasHeight;
+    updateCanvasSize();
 
     gridToCenter = function(x, y) {
 
@@ -78,6 +90,21 @@ $(function() {
         drawLocation();
     };
 
+    drawGridLast = function() {
+
+        var gridBlock = gridBlocks[gridBlocks.length - 1];
+
+        ctx.beginPath();
+        ctx.rect(gridBlock.x * gridSize, gridBlock.y * gridSize, gridSize, gridSize);
+
+        ctx.fillStyle = (gridBlock['type'] === 1 ? "#50D050" : "#f61f1f");
+        ctx.fill();
+        ctx.strokeStyle = (gridBlock['type'] === 1 ? "#50D050" : "#f61f1f");
+        ctx.stroke();
+
+        drawLocation();
+    };
+
     drawLocation = function(x, y) {
         if(typeof(x) !== 'undefined')
             locationX = x;
@@ -103,16 +130,6 @@ $(function() {
 
         dots.push({'x' : x, 'y' : y});
         draw();
-    };
-
-
-
-    var updateCanvasSize = function() {
-        ctx.canvas.width = (window.innerWidth * zoomValue);
-        ctx.canvas.height = (window.innerHeight * zoomValue);
-
-        draw();
-        drawGrid();
     };
 
 
