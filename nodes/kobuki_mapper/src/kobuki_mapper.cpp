@@ -8,16 +8,18 @@
 #include <kobuki_mapper/GridPoint.h>
 #include <kobuki_depth/CameraPoint.h>
 #include <kobuki_ultrasone/UltrasoneSensors.h>
+#include <kobuki_msgs/ButtonEvent.h>
 #include <stdlib.h>
 #include <cstdio>
 
 #include "robot.h"
 
-
 using namespace std;
 using namespace kobuki_mapper; // instead of kobuki_mapper::GridPoint, we can use GridPoint
 using namespace kobuki_depth;
 using namespace kobuki_ultrasone;
+
+bool is_activated = false;
 
 
 Robot robot;
@@ -36,6 +38,19 @@ void odomCallback(const nav_msgs::OdometryConstPtr& msg) {
 
     // Let the robot know it's position
     robot.setCurrentPosition(positionXGrid, positionYGrid);
+}
+
+void buttonsCallback(const kobuki_msgs::ButtonEventConstPtr& msg) {
+
+    ROS_INFO_STREAM("button: " << msg->button);
+    ROS_INFO_STREAM("state: " << msg->state);
+
+    // When pressing the first button
+    if(msg->button == 2 && msg->state == 1) {
+        is_activated = !is_activated;
+
+        ROS_INFO_STREAM("activated: " << is_activated);
+    }
 }
 
 void cameraPointsCallback(const CameraPointConstPtr& msg) {
@@ -57,7 +72,8 @@ void spin() {
         ros::spinOnce();
         spin_rate.sleep();
 
-        robot.drive();
+        if(is_activated)
+            robot.drive();
     }
 }
 
@@ -73,6 +89,8 @@ int main(int argc, char **argv) {
 	ros::Subscriber odom_sub            = n.subscribe("/odom", 100, odomCallback);
 	ros::Subscriber cameraPoints        = n.subscribe("/camera_points", 100, cameraPointsCallback);
 	ros::Subscriber ultrasoneSensors    = n.subscribe("/ultrasone_sensors", 100, ultrasoneSensorsCallback);
+
+	ros::Subscriber buttons    = n.subscribe("/mobile_base/events/button", 100, buttonsCallback);
 
 	/*robot.printRotationPossibilities();
 	robot.increaseRotationPossibilities(90, 90);

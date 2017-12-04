@@ -74,24 +74,152 @@ void Robot::setUltrasoneSensorDistance(int sensor, int distance) {
     ultrasoneValues[sensor] = distance;
 }
 
-void Robot::drive() {
+void Robot::drive_autonomous() {
     resetRotationPossibilities();
 
-    bool canRideForward = (ultrasoneValues[0] > wallDistance);
-    bool canRideBackward = (ultrasoneValues[2] > wallDistance);
-    bool canTurnLeft = (ultrasoneValues[3] > wallDistance);
-    bool canTurnRight = (ultrasoneValues[1] > wallDistance);
+    int front = ultrasoneValues[0];
+    int back = ultrasoneValues[2];
+    int left = ultrasoneValues[3];
+    int right = ultrasoneValues[1];
+
+    bool canRideForward = (front > wallDistance);
+    bool canRideBackward = (back > wallDistance);
+    bool canTurnLeft = (left > wallDistance);
+    bool canTurnRight = (right > wallDistance);
 
     if(driveForward) {
         if(!canRideForward) {
             driveForward = false;
+        } else {
+
+            /*
+            todo:   check here if the tile in front of us is already visited.
+                    If that is the case, and the robot is driving forward, we should check if the robot can drive
+                    right of left. (fixed number?)
+                    save the start and the end of the 'gap'. Ride back to the CENTER of the gap and make a rotation and go on.
+            */
+
+            // Check if we are driving over a path which we already mapped.
+            if(isDrivingKnownPath) {
+                // Are we already at the end of a gap?
+                if(!endOfGap) {
+                    // START OF RIGHT
+
+                    // Check if we already set the start-point of a gap for the right side.
+                    if(!gapRightStartFound) {
+                        // if the distance to the right is bigger then the WALL_DISTANCE_MIN, there is a gap
+                        if(right > WALL_DISTANCE_MIN) {
+                            GridPoint gridPoint;
+                                gridPoint.x = currentX;
+                                gridPoint.y = currentY;
+                                gridPoint.z = 0;
+                                gridPoint.type = 1;
+
+                            // save the start-point of the gap
+                            gapRightStart = gridPoint;
+                            gapRightStartFound = true;
+                        }
+                    } else if(right < WALL_DISTANCE_MIN) { // if the right-side has found the 'end' of the gap ...
+                         GridPoint gridPoint;
+                             gridPoint.x = currentX;
+                             gridPoint.y = currentY;
+                             gridPoint.z = 0;
+                             gridPoint.type = 1;
+
+
+                         // ... we can now save this as the end of the gap.
+                         gapRightEnd = gridPoint;
+
+                         // and because we have found a gap at the right, we have to save that
+                         gapIsRight = true;
+                         endOfGap = true;
+                     }
+
+                    // END OF RIGHT
+
+                    // START OF LEFT
+
+                    // Check if we already set the start-point of a gap for the left side.
+                    if(!gapLeftStartFound) {
+                        // if the distance to the left is bigger then the WALL_DISTANCE_MIN, there is a gap
+                        if(left > WALL_DISTANCE_MIN) {
+                            GridPoint gridPoint;
+                                gridPoint.x = currentX;
+                                gridPoint.y = currentY;
+                                gridPoint.z = 0;
+                                gridPoint.type = 1;
+
+                            // save the start-point of the gap
+                            gapLeftStart = gridPoint;
+                            gapLeftStartFound = true;
+                        }
+                    } else if(left < WALL_DISTANCE_MIN) { // if the left-side has found the 'end' of the gap ...
+                         GridPoint gridPoint;
+                             gridPoint.x = currentX;
+                             gridPoint.y = currentY;
+                             gridPoint.z = 0;
+                             gridPoint.type = 1;
+
+
+                         // ... we can now save this as the end of the gap.
+                         gapLeftEnd = gridPoint;
+
+                         // and because we have found a gap at the left, we have to save that
+                         gapIsLeft = true;
+                         endOfGap = true;
+                     }
+
+                     // END OF LEFT
+                } else {
+
+                    // GAP FOUND, DO SOMETHING
+
+
+
+                    // check if we already rotated the robot
+                    if(!hasRotatedBecauseOfGap) {
+                        driveForward = false;
+                    } else {
+                        // we already have rotated the robot, now lets drive it forward till the center of the gap.
+                        // Check if we have calculated the time needed to drive forward.
+                        if(!driveToGapDuration) {
+
+                            int distanceX = 0;
+                            int distanceY = 0;
+
+                            if(gapIsLeft) {
+                                distanceX = gapLeftEnd.x - gapLeftStart.x;
+                                distanceY = gapLeftEnd.y - gapLeftStart.y;
+                            } else {
+                                distanceX = gapRightEnd.x - gapRightStart.x;
+                                distanceY = gapRightEnd.y - gapRightStart.y;
+                            }
+
+                            distanceX -= currentX;
+                            distanceY -= currentY
+
+                            driveToGapDuration = ros::Duration((M_PI / linear)); // calculate time needed to drive forward.
+                            driveToGapStartTime = ros::Time::now();
+                        };
+
+
+                        if ((ros::Time::now() - driveToGapStartTime) < driveToGapDuration) {
+                            driveForward = false;
+                        }
+                    }
+
+                }
+
+
+            }
+
+            geometry_msgs::TwistPtr cmd_vel_msg_ptr;
+            cmd_vel_msg_ptr.reset(new geometry_msgs::Twist());
+
+            cmd_vel_msg_ptr->linear.x = linear;
+            cmd_vel_publisher.publish(cmd_vel_msg_ptr);
+
         }
-
-        geometry_msgs::TwistPtr cmd_vel_msg_ptr;
-        cmd_vel_msg_ptr.reset(new geometry_msgs::Twist());
-
-        cmd_vel_msg_ptr->linear.x = linear;
-        cmd_vel_publisher.publish(cmd_vel_msg_ptr);
     } else {
         if(!isStopped) {
             geometry_msgs::TwistPtr cmd_vel_msg_ptr;
@@ -103,9 +231,38 @@ void Robot::drive() {
         }
     }
 
+    // If we have found a gap while driving back, we go back to that gap.
+    if(!driveForward && isStopped && mustRotate && endOfGap && !hasRotatedBecauseOfGap) {
+        mustRotate = false;
+
+        // we rotate 180 degrees because the robot was driving forward while the gap was found.
+        float backDegrees = degrees + 180;
+        if(backDegrees > 359)
+            backDegrees -= 360;
+
+        turnDirection = 1; // turn a side, makes no difference if left or right
+        turningDuration = ros::Duration(backDegrees / 180 * (M_PI / angle)); // calculate time needed to rotate.
+
+        ROS_INFO_STREAM("Will rotate " << turningDuration.toSec() * angle / M_PI * 180 << " degrees because of gap.");
+
+        hasRotatedBecauseOfGap = true;
+        // Let the rotation 'function' now it should rotate
+        isRotating = true;
+        // set start-time of rotation
+        turningStarted = ros::Time::now();
+    }
+
+    if(!driveForward && isStopped && mustRotate && endOfGap && hasRotatedBecauseOfGap) {
+
+        // TODO: rotate to gap
+
+    }
+
+    // If we can't drive forward anymore because the front-sensor has detected a obstacle.
     if(!driveForward && isStopped && mustRotate) {
         mustRotate = false;
 
+        // determine if the robot can rotate to specific directions
         if(!canTurnRight)
             decreaseRotationPossibilities(225, 90, 2);
         if(!canTurnLeft)
@@ -115,9 +272,32 @@ void Robot::drive() {
         if(!canRideBackward)
             decreaseRotationPossibilities(135, 90, 2);
 
+
+        // check if the tile behind the robot is already visited.
+        float backDegrees = degrees + 180;
+        if(backDegrees > 359)
+            backDegrees -= 360;
+
+        int backY = currentY - round(cos(round(backDegrees) * M_PI / 180) * 1); // cos(0 * pi / 180) * 5 = 5
+        int backX = currentX + round(sin(round(backDegrees) * M_PI / 180) * 1); // sin(0 * pi / 180) * 5 = 0
+
+        // check if we already visited the tile behind the robot
+        GridPoint * gridPoint = getTile(backX, backY);
+
+        // if the tile exists ...
+        if(gridPoint != nullptr) {
+            // ... we decrease the possibilities of the 'back' tiles by one.
+            decreaseRotationPossibilities(135, 90, 1);
+        }
+
+
         // TODO: Filter grid & bumper
 
         int degreesOfRotation = getRotationDirection();
+
+        if(degreesOfRotation >= 135 && degreesOfRotation <= 225) {
+            isDrivingKnownPath = true;
+        }
 
         if(degreesOfRotation == -1) {
             ROS_INFO_STREAM("Cannot rotate.");
@@ -158,29 +338,26 @@ void Robot::drive() {
 
             isRotating = false;
 
-            // Reset turn sides
-            turnLeft = false;
-            turnRight = false;
-
             // Reset drive settings
             driveForward = true;
             isStopped = false;
         }
     }
+}
 
+void Robot::drive_to_point() {
 
+}
 
+void Robot::drive() {
+    if(driveToPoint) {
+        // TODO: pathfinding etc
 
+        drive_to_point();
 
-
-
-
-
-
-
-
-
-
+    } else {
+        drive_autonomous();
+    }
 }
 
 void Robot::resetRotationPossibilities() {
@@ -189,14 +366,14 @@ void Robot::resetRotationPossibilities() {
 
 void Robot::updateRotationPossibilities(int index, int length, int math) {
     for( unsigned int i = index; i < (index + length); i++ ) {
-        int degrees = i;
+        int degreesIndex = i;
         if(i >= (sizeof(rotationPossibilities) / sizeof(rotationPossibilities[0])) - 1)
-            degrees =- 360;
+            degreesIndex =- 360;
 
         if(math == 0) {
-            rotationPossibilities[degrees] = 0;
+            rotationPossibilities[degreesIndex] = 0;
         } else {
-            rotationPossibilities[degrees] += math;
+            rotationPossibilities[degreesIndex] += math;
         }
 
     }
@@ -221,15 +398,15 @@ int Robot::getRotationDirection() {
     int highestValue = 0;
 
     for( unsigned int i = 0; i < (sizeof(rotationPossibilities) / sizeof(rotationPossibilities[0])); i++ ) {
-        int degrees = i + 1;
+        int degreesIndex = i + 1;
         int value = rotationPossibilities[i];
 
         if(value > highestValue) {
             rotationDegrees.clear();
-            rotationDegrees.push_back(degrees);
+            rotationDegrees.push_back(degreesIndex);
             highestValue = value;
         } else if(value == highestValue) {
-            rotationDegrees.push_back(degrees);
+            rotationDegrees.push_back(degreesIndex);
         }
     }
 

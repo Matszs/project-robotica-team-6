@@ -7,6 +7,8 @@
 #include <kobuki_mapper/GridPoint.h>
 #include <geometry_msgs/Twist.h>
 
+#define WALL_DISTANCE_MIN 100
+
 using namespace std;
 using namespace kobuki_mapper;
 
@@ -34,7 +36,7 @@ class Robot {
         bool isRotating = false;
         int turnDirection = 0;
 
-        float wallDistance = 60;
+        float wallDistance = 30;
         ros::Duration turningDuration;
         ros::Time turningStarted;
 
@@ -44,7 +46,36 @@ class Robot {
         int rotationPossibilities[360]; // 0 - 359
 
 
+
+        bool isDrivingKnownPath = false;
+
+        bool gapIsRight = false;
+        bool gapIsLeft = false;
+
+        bool gapRightStartFound = false;
+        GridPoint gapRightStart;
+        GridPoint gapRightEnd;
+
+        bool gapLeftStartFound = false;
+        GridPoint gapLeftStart;
+        GridPoint gapLeftEnd;
+
+        bool endOfGap = false;
+        bool hasRotatedBecauseOfGap = false;
+
+        ros::Duration driveToGapDuration;
+        ros::Time driveToGapStartTime;
+
+
+        bool driveToPoint = false;
+        GridPoint drivePoint;
+
+
+
+
         void updateRotationPossibilities(int offset, int length, int math);
+        void drive_autonomous();
+        void drive_to_point();
 
 
     public:
