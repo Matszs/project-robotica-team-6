@@ -32,6 +32,6 @@ catkin_package(
 
 add_compile_options(-std=c++11)
 
-add_executable(kobuki_mapper src/kobuki_mapper.cpp src/robot.cpp)
+add_executable(kobuki_mapper src/kobuki_mapper.cpp src/robot.cpp src/square.cpp)
 target_link_libraries(kobuki_mapper ${catkin_LIBRARIES})
 

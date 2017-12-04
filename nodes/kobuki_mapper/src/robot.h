@@ -7,6 +7,8 @@
 #include <kobuki_mapper/GridPoint.h>
 #include <geometry_msgs/Twist.h>
 
+#include "square.h"
+
 #define WALL_DISTANCE_MIN 100
 
 using namespace std;

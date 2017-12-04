@@ -1,3 +1,5 @@
+// a* pathfinding:  https://www.raywenderlich.com/4946/introduction-to-a-pathfinding
+
 #include <ros/ros.h>
 
 #include <message_filters/sync_policies/approximate_time.h>
