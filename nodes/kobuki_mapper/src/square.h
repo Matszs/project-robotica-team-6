@@ -1,3 +1,5 @@
+// a* pathfinding:  https://www.raywenderlich.com/4946/introduction-to-a-pathfinding
+
 #ifndef __SQUARE_H_INCLUDED__
 #define __SQUARE_H_INCLUDED__
 
@@ -11,10 +13,11 @@ class Square {
         int y;
 
         // Scores of A*
-        int g;
-        int h;
+        int g = 0; // movement cost // cost from A to square
+        int h = 0; // estimated movement cost from the current square to the destination point // estimated cost from square to B
 
     public:
+    	Square(int x, int y, int g, int h);
     	Square(int x, int y);
 
     	int getX();

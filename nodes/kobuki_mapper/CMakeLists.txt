@@ -8,6 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
         geometry_msgs
         message_generation
         genmsg
+        tf
 )
 
 add_message_files(
@@ -32,6 +33,6 @@ catkin_package(
 
 add_compile_options(-std=c++11)
 
-add_executable(kobuki_mapper src/kobuki_mapper.cpp src/robot.cpp src/square.cpp)
+add_executable(kobuki_mapper src/kobuki_mapper.cpp src/robot.cpp src/square.cpp src/pathfinder.cpp)
 target_link_libraries(kobuki_mapper ${catkin_LIBRARIES})
 

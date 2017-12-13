@@ -7,6 +7,8 @@
 #include <message_filters/subscriber.h>
 
 #include <nav_msgs/Odometry.h>
+#include <sensor_msgs/Imu.h>
+
 #include <kobuki_mapper/GridPoint.h>
 #include <kobuki_depth/CameraPoint.h>
 #include <kobuki_ultrasone/UltrasoneSensors.h>
@@ -66,8 +68,13 @@ void ultrasoneSensorsCallback(const UltrasoneSensorsConstPtr& msg) {
     robot.setUltrasoneSensorDistance(3, msg->sensor4_distance);
 }
 
-void spin() {
+void imuDataCallback(const sensor_msgs::ImuConstPtr& msg) {
+    //ROS_INFO_STREAM("w: " << msg->orientation.w);
+    robot.setOrientation(msg->orientation);
+}
 
+void spin() {
+    bool hasTurned = false;
     ros::Rate spin_rate(10);
     while(ros::ok) {
 
@@ -76,6 +83,10 @@ void spin() {
 
         if(is_activated)
             robot.drive();
+
+        if(!hasTurned && robot.rotateTo(90))
+            hasTurned = true;
+
     }
 }
 
@@ -92,13 +103,22 @@ int main(int argc, char **argv) {
 	ros::Subscriber cameraPoints        = n.subscribe("/camera_points", 100, cameraPointsCallback);
 	ros::Subscriber ultrasoneSensors    = n.subscribe("/ultrasone_sensors", 100, ultrasoneSensorsCallback);
 
-	ros::Subscriber buttons    = n.subscribe("/mobile_base/events/button", 100, buttonsCallback);
+	ros::Subscriber buttons             = n.subscribe("/mobile_base/events/button", 100, buttonsCallback);
+	ros::Subscriber imuData             = n.subscribe("/mobile_base/sensors/imu_data", 100, imuDataCallback);
 
 	/*robot.printRotationPossibilities();
-	robot.increaseRotationPossibilities(90, 90);
+	robot.decreaseRotationPossibilities(315, 90, 2);
 	robot.printRotationPossibilities();*/
 
-    spin();
+    spin(); // uncomment to drive
+
+    //ROS_INFO_STREAM("ROTATEEE" << robot.turnOdom(true, 3.14));
+    //ROS_INFO_STREAM("ROTATEEE" << robot.turnOdom(true, 1.57));
+    //ROS_INFO_STREAM("ROTATEEE" << robot.turnOdom(true, 0.79));
+    //ROS_INFO_STREAM("ROTATEEE" << robot.turnOdom(true, M_PI / 2));
+
+    //ROS_INFO_STREAM("ROTATEEE" << robot.turnOdom(true, 1.57));
+
 
 	ROS_INFO("Exiting the node");
 	return 0;

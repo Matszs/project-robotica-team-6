@@ -20,6 +20,11 @@ GridPoint* Robot::getTile(int x, int y) {
     return nullptr;
 }
 
+void Robot::setOrientation(geometry_msgs::Quaternion orientation) {
+    this->orientation = orientation;
+    hasOrientation = true;
+}
+
 void Robot::addTile(int x, int y, int type) {
     // Add grid point
     GridPoint gridPoint;
@@ -175,14 +180,13 @@ void Robot::drive_autonomous() {
                     // GAP FOUND, DO SOMETHING
 
 
-
                     // check if we already rotated the robot
                     if(!hasRotatedBecauseOfGap) {
                         driveForward = false;
                     } else {
                         // we already have rotated the robot, now lets drive it forward till the center of the gap.
                         // Check if we have calculated the time needed to drive forward.
-                        if(!driveToGapDuration) {
+                        if(driveToGapDuration.isZero()) {
 
                             int distanceX = 0;
                             int distanceY = 0;
@@ -196,12 +200,16 @@ void Robot::drive_autonomous() {
                             }
 
                             distanceX -= currentX;
-                            distanceY -= currentY
+                            distanceY -= currentY;
 
-                            driveToGapDuration = ros::Duration((M_PI / linear)); // calculate time needed to drive forward.
+                            // calculate relative distance btween new position and current position
+                            float totalDistance = sqrt(pow(distanceX - currentX, 2) + pow(distanceY - currentY, 2));
+                            ROS_INFO_STREAM("Will drive forward " << (totalDistance * 10) << " meter to gap.");
+
+                            driveToGapDuration = ros::Duration(linear * (totalDistance * 10)); // calculate time needed to drive forward.
+                            ROS_INFO_STREAM("Which is " << driveToGapDuration.toSec() << " seconds.");
                             driveToGapStartTime = ros::Time::now();
-                        };
-
+                        }
 
                         if ((ros::Time::now() - driveToGapStartTime) < driveToGapDuration) {
                             driveForward = false;
@@ -241,24 +249,54 @@ void Robot::drive_autonomous() {
             backDegrees -= 360;
 
         turnDirection = 1; // turn a side, makes no difference if left or right
-        turningDuration = ros::Duration(backDegrees / 180 * (M_PI / angle)); // calculate time needed to rotate.
+        turningDuration = ros::Duration((float)backDegrees / 180 * (M_PI / angle)); // calculate time needed to rotate.
 
         ROS_INFO_STREAM("Will rotate " << turningDuration.toSec() * angle / M_PI * 180 << " degrees because of gap.");
 
         hasRotatedBecauseOfGap = true;
-        // Let the rotation 'function' now it should rotate
+        // Let the rotation 'function' make the rotation
         isRotating = true;
         // set start-time of rotation
         turningStarted = ros::Time::now();
     }
 
     if(!driveForward && isStopped && mustRotate && endOfGap && hasRotatedBecauseOfGap) {
+        mustRotate = false;
 
-        // TODO: rotate to gap
+        // Rotate to gap
+        float backDegrees = degrees + 90;
+        if(backDegrees > 359)
+            backDegrees -= 360;
+
+        if(gapIsRight) {
+            turnDirection = -1;
+        } else if(gapIsLeft) {
+            turnDirection = 1;
+        } else {
+            ROS_INFO_STREAM("No gap found ????");
+        }
+
+        turningDuration = ros::Duration((float)backDegrees / 180 * (M_PI / angle)); // calculate time needed to rotate.
+        ROS_INFO_STREAM("Will rotate " << turningDuration.toSec() * angle / M_PI * 180 << " degrees to gap.");
+
+        isRotating = true;
+
+        // Reset all settings of gap-finder because we are done.
+
+        gapIsRight = false;
+        gapIsLeft = false;
+
+        gapRightStartFound = false;
+        gapLeftStartFound = false;
+
+        endOfGap = false;
+        hasRotatedBecauseOfGap = false;
+
+        isDrivingKnownPath = false;
 
     }
 
-    // If we can't drive forward anymore because the front-sensor has detected a obstacle.
+    // If we can't drive forward anymore because the front-sensor has detected an obstacle.
     if(!driveForward && isStopped && mustRotate) {
         mustRotate = false;
 
@@ -293,8 +331,11 @@ void Robot::drive_autonomous() {
 
         // TODO: Filter grid & bumper
 
+        printRotationPossibilities();
+
         int degreesOfRotation = getRotationDirection();
 
+        // Check if we are going backwards. If so we are driving on a road we already discovered.
         if(degreesOfRotation >= 135 && degreesOfRotation <= 225) {
             isDrivingKnownPath = true;
         }
@@ -307,21 +348,26 @@ void Robot::drive_autonomous() {
         ROS_INFO_STREAM("rotate to: " << degreesOfRotation);
 
         if(degreesOfRotation > 180) {
-            turnDirection = -1;
-            degreesOfRotation =- 180;
-        } else {
             turnDirection = 1;
+            degreesOfRotation -= 180;
+        } else {
+            turnDirection = -1;
         }
 
-        turningDuration = ros::Duration(degreesOfRotation / 180 * (M_PI / angle));
+        turningDuration = ros::Duration(0.65 * ((float)degreesOfRotation / 90) * (M_PI / angle));
 
         ROS_INFO_STREAM("Will rotate " << turningDuration.toSec() * angle / M_PI * 180 << " degrees.");
         isRotating = true;
 
         turningStarted = ros::Time::now();
+
+
+
     }
 
-    if(!driveForward && isStopped && isRotating) {
+    ROS_INFO_STREAM("!driveForward: " << !driveForward << " isStopped: " << isStopped << " isRotating: " << isRotating);
+
+    /*if(!driveForward && isStopped && isRotating) {
         if ((ros::Time::now() - turningStarted) < turningDuration) {
 
             geometry_msgs::TwistPtr cmd_vel_msg_ptr;
@@ -331,7 +377,6 @@ void Robot::drive_autonomous() {
             cmd_vel_publisher.publish(cmd_vel_msg_ptr);
 
         } else {
-
             geometry_msgs::TwistPtr cmd_vel_msg_ptr;
             cmd_vel_msg_ptr.reset(new geometry_msgs::Twist());
             cmd_vel_publisher.publish(cmd_vel_msg_ptr);
@@ -342,7 +387,193 @@ void Robot::drive_autonomous() {
             driveForward = true;
             isStopped = false;
         }
+    }*/
+}
+
+double Robot::getDegrees() {
+    tf::Quaternion q;
+
+    tf::quaternionMsgToTF(orientation, q);
+
+    tf::Matrix3x3 m(q);
+    double roll, pitch, yaw;
+    m.getRPY(roll, pitch, yaw);
+
+    double degrees = (yaw / M_PI * 180);
+    /*if(degrees < 0)
+        degrees += 360;*/
+
+    return degrees;
+}
+
+bool Robot::rotateTo(int degrees) {
+    bool isDone = false;
+    ros::Rate spin_rate(10);
+
+    ROS_INFO_STREAM("hasOrientation: " << hasOrientation);
+    if(hasOrientation) {
+
+        double startDegrees = getDegrees();
+        bool clockwise = (degrees > startDegrees);
+
+        while(!isDone && ros::ok()) {
+            ros::spinOnce();
+            spin_rate.sleep();
+
+            double currentDegrees = getDegrees();
+
+            ROS_INFO_STREAM("start: " << startDegrees << " current: " << currentDegrees << " degrees: " << degrees << "clockWise: " << clockwise);
+
+            geometry_msgs::Twist base_cmd;
+            base_cmd.linear.x = base_cmd.linear.y = 0.0;
+            base_cmd.angular.z = 1;
+            if (clockwise)
+                base_cmd.angular.z = -base_cmd.angular.z;
+
+            cmd_vel_publisher.publish(base_cmd);
+
+            /*if(clockwise) {
+                if(currentDegrees >= degrees)
+                    isDone = true;
+            } else {
+                if(currentDegrees <= degrees)
+                    isDone = true;
+            }*/
+
+        }
     }
+
+    ROS_INFO_STREAM("isDone " << isDone);
+
+    return isDone;
+}
+
+bool Robot::rotateBy(int degrees, int clockwise) {
+
+}
+
+
+
+
+
+
+
+bool Robot::turnOdom(bool clockwise, double radians) {
+    bool done = false;
+
+    ros::Rate spin_rate(10);
+    while (!done && ros::ok()) {
+        ros::spinOnce();
+        spin_rate.sleep();
+
+        if(hasOrientation) {
+            tf::Quaternion q;
+            tf::quaternionMsgToTF(orientation, q);
+
+            tf::Matrix3x3 m(q);
+            double roll, pitch, yaw;
+            m.getRPY(roll, pitch, yaw);
+
+            std::cout << "Yaw: " << yaw << " Degrees: " << (yaw / M_PI * 180) << std::endl;
+        }
+    }
+
+    return false;
+
+
+
+    /*tf::TransformListener listener;
+
+
+    *//*while(radians < 0)
+        radians += 2*M_PI;
+    while(radians > 2*M_PI)
+        radians -= 2*M_PI;*//*
+
+    radians = fmod(fmod(radians, 2.0*M_PI) + 2.0*M_PI, 2.0*M_PI);
+    if (radians > M_PI)
+        radians -= 2.0 *M_PI;
+
+    //wait for the listener to get the first message
+    listener.waitForTransform("base_footprint", "odom", ros::Time(0), ros::Duration(1.0));
+
+    //we will record transforms here
+    tf::StampedTransform start_transform;
+    tf::StampedTransform current_transform;
+
+    //record the starting transform from the odometry to the base frame
+    listener.lookupTransform("base_footprint", "odom", ros::Time(0), start_transform);
+
+    //we will be sending commands of type "twist"
+    geometry_msgs::Twist base_cmd;
+    //the command will be to turn at 0.75 rad/s
+    base_cmd.linear.x = base_cmd.linear.y = 0.0;
+    base_cmd.angular.z = 1;
+    if (clockwise)
+        base_cmd.angular.z = -base_cmd.angular.z;
+
+    //the axis we want to be rotating by
+    tf::Vector3 desired_turn_axis(0,0,1);
+    if (!clockwise)
+        desired_turn_axis = -desired_turn_axis;
+
+    ros::Rate rate(10.0);
+    bool done = false;
+    while (!done && ros::ok()) {
+        //send the drive command
+        cmd_vel_publisher.publish(base_cmd);
+        //rate.sleep();
+        //get the current transform
+        try {
+            listener.lookupTransform("base_footprint", "tf", ros::Time(0), current_transform);
+        } catch (tf::TransformException ex) {
+            ROS_ERROR("%s",ex.what());
+            break;
+        }
+
+        tf::Transform relative_transform = start_transform.inverse() * current_transform;
+        tf::Vector3 actual_turn_axis = relative_transform.getRotation().getAxis();
+
+        double angle_turned = relative_transform.getRotation().getAngle();
+
+
+
+        //tf::Quaternion q(quat.x, quat.y, quat.z, quat.w);
+        tf::Matrix3x3 m(current_transform.getRotation());
+        double roll, pitch, yaw;
+        m.getRPY(roll, pitch, yaw);
+        std::cout << "Yaw: " << yaw << " Degrees: " << (yaw / M_PI * 180) << std::endl;
+
+
+        tf::Matrix3x3 m2(start_transform.getRotation());
+        double roll2, pitch2, yaw2;
+        m2.getRPY(roll2, pitch2, yaw2);
+        std::cout << "Yaw: " << yaw2 << " Degrees: " << (yaw2 / M_PI * 180) << std::endl;
+
+        double angleRotated = yaw - yaw2;
+
+        ROS_INFO_STREAM("ROTATED ####: " << angleRotated);
+
+
+        //angle_turned = yaw;
+
+
+
+        ROS_INFO_STREAM("angle_turned: " << angle_turned);
+
+        if(fabs(angle_turned) < 1.0e-2)
+            continue;
+
+        if(actual_turn_axis.dot( desired_turn_axis ) < 0)
+            angle_turned = 2 * M_PI - angle_turned;
+
+            if (angle_turned > radians)
+                done = true;
+    }
+
+    if (done)
+        return true;
+    return false;*/
 }
 
 void Robot::drive_to_point() {
@@ -367,8 +598,8 @@ void Robot::resetRotationPossibilities() {
 void Robot::updateRotationPossibilities(int index, int length, int math) {
     for( unsigned int i = index; i < (index + length); i++ ) {
         int degreesIndex = i;
-        if(i >= (sizeof(rotationPossibilities) / sizeof(rotationPossibilities[0])) - 1)
-            degreesIndex =- 360;
+        if(i >= (sizeof(rotationPossibilities) / sizeof(rotationPossibilities[0])))
+            degreesIndex -= 360;
 
         if(math == 0) {
             rotationPossibilities[degreesIndex] = 0;
@@ -427,6 +658,22 @@ int Robot::getRotationDirection() {
     else
         return rotationDegrees.at(rotationDegrees.size() / 2);
 }
+
+
+
+
+
+void Robot::calculatePath() {
+
+    Pathfinder pathfinder;
+    pathfinder.setCurrentLocation(currentX, currentY);
+    pathfinder.setDataSet(grid);
+
+    pathfinder.calculatePath();
+
+}
+
+
 
 // STATIC
 

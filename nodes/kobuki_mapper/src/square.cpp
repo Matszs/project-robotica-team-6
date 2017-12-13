@@ -1,16 +1,16 @@
 #include "square.h"
 
-Square::Square(int x, int y) {
-	this.x = x;
-	this.y = y;
+Square::Square(int x, int y, int g, int h) {
+	this->x = x;
+	this->y = y;
+
+	this->g = g;
+	this->h = h;
 }
 
-Square::Square(int x, int y, int g, int h) {
-	this.x = x;
-	this.y = y;
-
-	this.g = g;
-	this.h = h;
+Square::Square(int x, int y) {
+	this->x = x;
+	this->y = y;
 }
 
 int Square::getX() {
@@ -34,9 +34,9 @@ int Square::getH() {
 }
 
 void Square::setG(int value) {
-	this.g = value;
+	this->g = value;
 }
 
 void Square::setH(int value) {
-	this.h = value;
+	this->h = value;
 }

@@ -6,8 +6,11 @@
 
 #include <kobuki_mapper/GridPoint.h>
 #include <geometry_msgs/Twist.h>
+#include <tf/transform_listener.h>
+#include <tf/transform_datatypes.h>
+#include <sensor_msgs/Imu.h>
 
-#include "square.h"
+#include "pathfinder.h"
 
 #define WALL_DISTANCE_MIN 100
 
@@ -43,7 +46,7 @@ class Robot {
         ros::Time turningStarted;
 
         float linear = 0.2;
-        float angle = 0.5;
+        float angle = 0.75;
 
         int rotationPossibilities[360]; // 0 - 359
 
@@ -68,12 +71,13 @@ class Robot {
         ros::Duration driveToGapDuration;
         ros::Time driveToGapStartTime;
 
+        geometry_msgs::Quaternion orientation;
+        bool hasOrientation;
+
+
 
         bool driveToPoint = false;
         GridPoint drivePoint;
-
-
-
 
         void updateRotationPossibilities(int offset, int length, int math);
         void drive_autonomous();
@@ -97,6 +101,15 @@ class Robot {
         void decreaseRotationPossibilities(int index, int length, int steps);
         void printRotationPossibilities();
         int getRotationDirection();
+
+        void calculatePath();
+
+        bool turnOdom(bool clockwise, double radians);
+        void setOrientation(geometry_msgs::Quaternion orientation);
+
+        double getDegrees();
+        bool rotateTo(int degrees);
+        bool rotateBy(int degrees, int clockwise);
 
 };
 
