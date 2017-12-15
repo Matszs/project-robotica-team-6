@@ -71,8 +71,7 @@ class Robot {
         ros::Duration driveToGapDuration;
         ros::Time driveToGapStartTime;
 
-        geometry_msgs::Quaternion orientation;
-        bool hasOrientation;
+        double startDegrees = -1;
 
 
 
@@ -110,6 +109,10 @@ class Robot {
         double getDegrees();
         bool rotateTo(int degrees);
         bool rotateBy(int degrees, int clockwise);
+
+
+        geometry_msgs::Quaternion orientation;
+        bool hasOrientation;
 
 };
 

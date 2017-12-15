@@ -25,7 +25,6 @@ using namespace kobuki_ultrasone;
 
 bool is_activated = false;
 
-
 Robot robot;
 
 void odomCallback(const nav_msgs::OdometryConstPtr& msg) {
@@ -69,23 +68,21 @@ void ultrasoneSensorsCallback(const UltrasoneSensorsConstPtr& msg) {
 }
 
 void imuDataCallback(const sensor_msgs::ImuConstPtr& msg) {
-    //ROS_INFO_STREAM("w: " << msg->orientation.w);
     robot.setOrientation(msg->orientation);
 }
 
 void spin() {
-    bool hasTurned = false;
     ros::Rate spin_rate(10);
     while(ros::ok) {
-
-        ros::spinOnce();
-        spin_rate.sleep();
 
         if(is_activated)
             robot.drive();
 
-        if(!hasTurned && robot.rotateTo(90))
-            hasTurned = true;
+        if(robot.rotateTo(270))
+            break;
+
+        ros::spinOnce();
+        spin_rate.sleep();
 
     }
 }
@@ -104,7 +101,7 @@ int main(int argc, char **argv) {
 	ros::Subscriber ultrasoneSensors    = n.subscribe("/ultrasone_sensors", 100, ultrasoneSensorsCallback);
 
 	ros::Subscriber buttons             = n.subscribe("/mobile_base/events/button", 100, buttonsCallback);
-	ros::Subscriber imuData             = n.subscribe("/mobile_base/sensors/imu_data", 100, imuDataCallback);
+	ros::Subscriber imuData             = n.subscribe("/mobile_base/sensors/imu_data", 1, imuDataCallback);
 
 	/*robot.printRotationPossibilities();
 	robot.decreaseRotationPossibilities(315, 90, 2);

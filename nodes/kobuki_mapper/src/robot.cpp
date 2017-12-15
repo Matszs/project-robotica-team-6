@@ -3,7 +3,7 @@
 void Robot::init(ros::NodeHandle * nodeHandle) {
     gridFieldPublisher          = nodeHandle->advertise<GridPoint>("/grid_field", 100);
     currentLocationPublisher    = nodeHandle->advertise<GridPoint>("/location", 100);
-    cmd_vel_publisher           = nodeHandle->advertise<geometry_msgs::Twist>("/mobile_base/commands/velocity", 10);
+    cmd_vel_publisher           = nodeHandle->advertise<geometry_msgs::Twist>("/mobile_base/commands/velocity", 1);
 
     resetRotationPossibilities();
 }
@@ -392,7 +392,6 @@ void Robot::drive_autonomous() {
 
 double Robot::getDegrees() {
     tf::Quaternion q;
-
     tf::quaternionMsgToTF(orientation, q);
 
     tf::Matrix3x3 m(q);
@@ -400,46 +399,71 @@ double Robot::getDegrees() {
     m.getRPY(roll, pitch, yaw);
 
     double degrees = (yaw / M_PI * 180);
-    /*if(degrees < 0)
-        degrees += 360;*/
+    if(degrees < 0)
+        degrees = abs(degrees);
+    else
+        degrees = 360 - degrees;
 
     return degrees;
 }
 
 bool Robot::rotateTo(int degrees) {
     bool isDone = false;
-    ros::Rate spin_rate(10);
 
-    ROS_INFO_STREAM("hasOrientation: " << hasOrientation);
     if(hasOrientation) {
+        double currentDegrees = getDegrees();
 
-        double startDegrees = getDegrees();
-        bool clockwise = (degrees > startDegrees);
+        if(startDegrees == -1)
+            startDegrees = currentDegrees;
 
-        while(!isDone && ros::ok()) {
-            ros::spinOnce();
-            spin_rate.sleep();
+        ROS_INFO_STREAM("start: " << startDegrees << " current: " << currentDegrees << " degrees: " << degrees);
 
-            double currentDegrees = getDegrees();
 
-            ROS_INFO_STREAM("start: " << startDegrees << " current: " << currentDegrees << " degrees: " << degrees << "clockWise: " << clockwise);
+        float absoluteDistanceStart = (((((int)degrees - (int)startDegrees) % 360) + 540) % 360) - 180;
+        float absoluteDistanceCurrent = (((((int)degrees - (int)currentDegrees) % 360) + 540) % 360) - 180;
 
-            geometry_msgs::Twist base_cmd;
-            base_cmd.linear.x = base_cmd.linear.y = 0.0;
-            base_cmd.angular.z = 1;
-            if (clockwise)
-                base_cmd.angular.z = -base_cmd.angular.z;
+        bool clockwise = (absoluteDistanceStart >= 0);
 
-            cmd_vel_publisher.publish(base_cmd);
+        ROS_INFO_STREAM("clockwise: " << clockwise);
 
-            /*if(clockwise) {
-                if(currentDegrees >= degrees)
+
+        float distance = abs(absoluteDistanceCurrent) / abs(absoluteDistanceStart);
+        float speed = 1.4 * distance;
+        ROS_INFO_STREAM("speed: " << speed);
+
+        if(speed < 0.2)
+            speed = 0.2;
+        if(speed > 1)
+            speed = 1;
+
+        ROS_INFO_STREAM("distance: " << distance);
+
+        geometry_msgs::Twist base_cmd;
+        base_cmd.linear.x = base_cmd.linear.y = 0.0;
+        base_cmd.angular.z = speed;
+        if (clockwise)
+            base_cmd.angular.z = -base_cmd.angular.z;
+
+        cmd_vel_publisher.publish(base_cmd);
+
+        if(abs(absoluteDistanceCurrent) < 10) {
+            if(clockwise) {
+                if(currentDegrees >= degrees) {
                     isDone = true;
+                    startDegrees = -1;
+                }
             } else {
-                if(currentDegrees <= degrees)
+                if(currentDegrees <= degrees) {
                     isDone = true;
-            }*/
+                    startDegrees = -1;
+                }
+            }
+        }
 
+        if(isDone) {
+            geometry_msgs::TwistPtr cmd_vel_msg_ptr;
+            cmd_vel_msg_ptr.reset(new geometry_msgs::Twist());
+            cmd_vel_publisher.publish(cmd_vel_msg_ptr);
         }
     }
 
@@ -449,7 +473,7 @@ bool Robot::rotateTo(int degrees) {
 }
 
 bool Robot::rotateBy(int degrees, int clockwise) {
-
+    
 }
 
 
