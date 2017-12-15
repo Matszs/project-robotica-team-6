@@ -78,7 +78,7 @@ void spin() {
         if(is_activated)
             robot.drive();
 
-        if(robot.rotateTo(270))
+        if(robot.rotateBy(270, true))
             break;
 
         ros::spinOnce();

@@ -472,13 +472,32 @@ bool Robot::rotateTo(int degrees) {
     return isDone;
 }
 
-bool Robot::rotateBy(int degrees, int clockwise) {
-    
+bool Robot::rotateBy(int degrees, bool clockwise) {
+    if(!hasOrientation) return false;
+
+    double currentDegrees = getDegrees();
+    double positionToRotateTo = 0;
+
+    if(startRelativeDegrees == -1)
+        startRelativeDegrees = currentDegrees;
+
+    if(clockwise){
+        positionToRotateTo = startRelativeDegrees + degrees;
+    } else {
+        positionToRotateTo = startRelativeDegrees - degrees;
+    }
+
+    if(positionToRotateTo > 360) (int)positionToRotateTo % 360;
+    if(positionToRotateTo < 0) positionToRotateTo +=360;
+
+
+    if(rotateTo(positionToRotateTo)){
+        startRelativeDegrees = -1;
+        return true;
+    }
+    return false;
+
 }
-
-
-
-
 
 
 
