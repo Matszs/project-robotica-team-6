@@ -4,7 +4,6 @@ void Robot::init(ros::NodeHandle * nodeHandle) {
     gridFieldPublisher          = nodeHandle->advertise<GridPoint>("/grid_field", 100);
     currentLocationPublisher    = nodeHandle->advertise<GridPoint>("/location", 100);
     cmd_vel_publisher           = nodeHandle->advertise<geometry_msgs::Twist>("/mobile_base/commands/velocity", 1);
-    degrees_publisher           = nodeHandle->advertise<std_msgs::Float64>("/degrees", 1);
 
     resetRotationPossibilities();
 }
@@ -24,11 +23,6 @@ GridPoint* Robot::getTile(int x, int y) {
 void Robot::setOrientation(geometry_msgs::Quaternion orientation) {
     this->orientation = orientation;
     hasOrientation = true;
-
-    std_msgs::Float64 degrees;
-    degrees.data = getDegrees();
-
-    degrees_publisher.publish(degrees);
 }
 
 void Robot::addTile(int x, int y, int type) {
@@ -76,12 +70,25 @@ void Robot::setCurrentPosition(int x, int y) {
     }
 }
 
+
 void Robot::setCameraDepth(float depth) {
     cameraDepth = depth;
 }
 
 void Robot::setUltrasoneSensorDistance(int sensor, int distance) {
     ultrasoneValues[sensor] = distance;
+}
+
+void Robot::setBumperState(int index, bool state){
+    bumper[index] = state;
+}
+
+bool Robot::getBumperStates(){
+    return (bumper[0] || bumper[1] || bumper[2]);
+}
+
+bool Robot::getBumperState(int index){
+    return bumper[index];
 }
 
 void Robot::drive_autonomous() {
@@ -97,8 +104,10 @@ void Robot::drive_autonomous() {
     bool canTurnLeft = (left > wallDistance);
     bool canTurnRight = (right > wallDistance);
 
+
+
     if(driveForward) {
-        if(!canRideForward) {
+        if(!canRideForward || getBumperStates()) {
             driveForward = false;
         } else {
 
@@ -290,6 +299,14 @@ void Robot::drive_autonomous() {
             decreaseRotationPossibilities(315, 90, 2);
         if(!canRideBackward)
             decreaseRotationPossibilities(135, 90, 2);
+
+        // Check bumper states and subtract 1 from the rotation possibilities
+        if(getBumperState(0))
+            decreaseRotationPossibilities(225, 90, 1);
+        if(getBumperState(1))
+            decreaseRotationPossibilities(315, 90, 1);
+        if(getBumperState(2))
+            decreaseRotationPossibilities(45, 90, 1);
 
 
         // check if the tile behind the robot is already visited.

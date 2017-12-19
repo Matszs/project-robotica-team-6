@@ -13,6 +13,7 @@
 #include <kobuki_depth/CameraPoint.h>
 #include <kobuki_ultrasone/UltrasoneSensors.h>
 #include <kobuki_msgs/ButtonEvent.h>
+#include <kobuki_msgs/BumperEvent.h>
 #include <stdlib.h>
 #include <cstdio>
 
@@ -71,6 +72,17 @@ void imuDataCallback(const sensor_msgs::ImuConstPtr& msg) {
     robot.setOrientation(msg->orientation);
 }
 
+void bumperCallback(const kobuki_msgs::BumperEventConstPtr& msg){
+
+    if (msg->state == kobuki_msgs::BumperEvent::PRESSED){
+        ROS_INFO_STREAM("Bumper: " << msg->bumper);
+        robot.setBumperState(msg->bumper, true);
+    } else{
+        robot.setBumperState(msg->bumper, false);
+    }
+}
+
+
 void spin() {
     ros::Rate spin_rate(10);
     while(ros::ok) {
@@ -97,6 +109,7 @@ int main(int argc, char **argv) {
 
 	ros::Subscriber buttons             = n.subscribe("/mobile_base/events/button", 100, buttonsCallback);
 	ros::Subscriber imuData             = n.subscribe("/mobile_base/sensors/imu_data", 1, imuDataCallback);
+	ros::Subscriber bumperSubscriber    = n.subscribe("/mobile_base/events/bumper", 1, bumperCallback);
 
 	/*robot.printRotationPossibilities();
 	robot.decreaseRotationPossibilities(315, 90, 2);

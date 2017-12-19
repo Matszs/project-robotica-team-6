@@ -88,6 +88,8 @@ class Robot {
         void drive_autonomous();
         void drive_to_point();
 
+        bool bumper[3] = {false,false,false};
+
 
     public:
 
@@ -98,6 +100,10 @@ class Robot {
         void setCurrentPosition(int x, int y);
         void setCameraDepth(float depth);
         void setUltrasoneSensorDistance(int sensor, int distance);
+
+        void setBumperState(int index, bool state);
+        bool getBumperStates();
+        bool getBumperState(int index);
 
         static int calculateGridDistance(float input);
         void drive();
