@@ -74,16 +74,11 @@ void imuDataCallback(const sensor_msgs::ImuConstPtr& msg) {
 void spin() {
     ros::Rate spin_rate(10);
     while(ros::ok) {
-
         if(is_activated)
             robot.drive();
 
-        if(robot.rotateBy(270, true))
-            break;
-
         ros::spinOnce();
         spin_rate.sleep();
-
     }
 }
 
@@ -108,14 +103,6 @@ int main(int argc, char **argv) {
 	robot.printRotationPossibilities();*/
 
     spin(); // uncomment to drive
-
-    //ROS_INFO_STREAM("ROTATEEE" << robot.turnOdom(true, 3.14));
-    //ROS_INFO_STREAM("ROTATEEE" << robot.turnOdom(true, 1.57));
-    //ROS_INFO_STREAM("ROTATEEE" << robot.turnOdom(true, 0.79));
-    //ROS_INFO_STREAM("ROTATEEE" << robot.turnOdom(true, M_PI / 2));
-
-    //ROS_INFO_STREAM("ROTATEEE" << robot.turnOdom(true, 1.57));
-
 
 	ROS_INFO("Exiting the node");
 	return 0;

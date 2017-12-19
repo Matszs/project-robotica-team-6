@@ -9,6 +9,7 @@
 #include <tf/transform_listener.h>
 #include <tf/transform_datatypes.h>
 #include <sensor_msgs/Imu.h>
+#include "std_msgs/Float64.h"
 
 #include "pathfinder.h"
 
@@ -23,6 +24,7 @@ class Robot {
         ros::Publisher gridFieldPublisher;
         ros::Publisher currentLocationPublisher;
         ros::Publisher cmd_vel_publisher;
+        ros::Publisher degrees_publisher;
 
         std::vector<GridPoint> grid;
         int currentX = -100;
@@ -42,13 +44,16 @@ class Robot {
         int turnDirection = 0;
 
         float wallDistance = 30;
-        ros::Duration turningDuration;
-        ros::Time turningStarted;
+        ros::Duration turningDuration; // old?
+        ros::Time turningStarted; // old?
 
         float linear = 0.2;
         float angle = 0.75;
 
         int rotationPossibilities[360]; // 0 - 359
+
+
+        int degreesOfRotation;
 
 
 
@@ -104,7 +109,6 @@ class Robot {
 
         void calculatePath();
 
-        bool turnOdom(bool clockwise, double radians);
         void setOrientation(geometry_msgs::Quaternion orientation);
 
         double getDegrees();
