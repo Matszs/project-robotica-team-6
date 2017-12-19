@@ -43,7 +43,7 @@ class Robot {
         bool isRotating = false;
         int turnDirection = 0;
 
-        float wallDistance = 30;
+        float wallDistance = 15;
         ros::Duration turningDuration; // old?
         ros::Time turningStarted; // old?
 
@@ -53,7 +53,8 @@ class Robot {
         int rotationPossibilities[360]; // 0 - 359
 
 
-        int degreesOfRotation;
+        int degreesOfRotation = -1;
+        int degreesAddRotation = -1;
 
 
 

@@ -4,6 +4,7 @@ void Robot::init(ros::NodeHandle * nodeHandle) {
     gridFieldPublisher          = nodeHandle->advertise<GridPoint>("/grid_field", 100);
     currentLocationPublisher    = nodeHandle->advertise<GridPoint>("/location", 100);
     cmd_vel_publisher           = nodeHandle->advertise<geometry_msgs::Twist>("/mobile_base/commands/velocity", 1);
+    degrees_publisher           = nodeHandle->advertise<std_msgs::Float64>("/degrees", 1);
 
     resetRotationPossibilities();
 }
@@ -23,6 +24,11 @@ GridPoint* Robot::getTile(int x, int y) {
 void Robot::setOrientation(geometry_msgs::Quaternion orientation) {
     this->orientation = orientation;
     hasOrientation = true;
+
+    std_msgs::Float64 degrees;
+    degrees.data = getDegrees();
+
+    degrees_publisher.publish(degrees);
 }
 
 void Robot::addTile(int x, int y, int type) {
@@ -107,6 +113,8 @@ void Robot::drive_autonomous() {
 
 
     if(driveForward) {
+        ROS_INFO_STREAM("BUMPER 0: " << getBumperState(0) << " BUMPER 1: " << getBumperState(1) << " BUMPER 2: " << getBumperState(2));
+
         if(!canRideForward || getBumperStates()) {
             driveForward = false;
         } else {
@@ -310,7 +318,7 @@ void Robot::drive_autonomous() {
 
 
         // check if the tile behind the robot is already visited.
-        float backDegrees = degrees + 180;
+        float backDegrees = getDegrees() + 180;
         if(backDegrees > 359)
             backDegrees -= 360;
 
@@ -324,6 +332,10 @@ void Robot::drive_autonomous() {
         if(gridPoint != nullptr) {
             // ... we decrease the possibilities of the 'back' tiles by one.
             decreaseRotationPossibilities(135, 90, 1);
+
+            ROS_INFO_STREAM("gridPoint!");
+        } else {
+            ROS_INFO_STREAM("NO gridPoint!");
         }
 
 
@@ -331,19 +343,22 @@ void Robot::drive_autonomous() {
 
         printRotationPossibilities();
 
-        degreesOfRotation = getRotationDirection();
+        degreesAddRotation = getRotationDirection();
+        turnDirection = 1;
+
+        ROS_INFO_STREAM("DG: " << degreesAddRotation);
 
         // Check if we are going backwards. If so we are driving on a road we already discovered.
-        if(degreesOfRotation >= 135 && degreesOfRotation <= 225) {
+        if(degreesAddRotation >= 135 && degreesAddRotation <= 225) {
             isDrivingKnownPath = true;
         }
 
-        if(degreesOfRotation == -1) {
+        if(degreesAddRotation == -1) {
             ROS_INFO_STREAM("Cannot rotate.");
             return;
         }
 
-        ROS_INFO_STREAM("rotate to: " << degreesOfRotation);
+        ROS_INFO_STREAM("rotate by: " << degreesAddRotation);
 
         isRotating = true;
     }
@@ -351,12 +366,25 @@ void Robot::drive_autonomous() {
     ROS_INFO_STREAM("!driveForward: " << !driveForward << " isStopped: " << isStopped << " isRotating: " << isRotating);
 
     if(!driveForward && isStopped && isRotating) {
-        if(rotateTo(degreesOfRotation)) {
-            isRotating = false;
-            driveForward = true;
-            isStopped = false;
+        if(degreesOfRotation != -1) {
+            if(rotateTo(degreesOfRotation)) {
+                isRotating = false;
+                driveForward = true;
+                isStopped = false;
 
-            degreesOfRotation = -1;
+                degreesOfRotation = -1;
+                degreesAddRotation = -1;
+            }
+        }
+        if(degreesAddRotation != -1) {
+            if(rotateBy(degreesAddRotation, turnDirection)) {
+                isRotating = false;
+                driveForward = true;
+                isStopped = false;
+
+                degreesOfRotation = -1;
+                degreesAddRotation = -1;
+            }
         }
     }
 }
@@ -429,6 +457,11 @@ bool Robot::rotateTo(int degrees) {
                     startDegrees = -1;
                 }
             }
+
+            if(!isDone && abs(absoluteDistanceCurrent) < 1) {
+                isDone = true;
+                startDegrees = -1;
+            }
         }
 
         if(isDone) {
@@ -458,9 +491,12 @@ bool Robot::rotateBy(int degrees, bool clockwise) {
         positionToRotateTo = startRelativeDegrees - degrees;
     }
 
-    if(positionToRotateTo > 360) (int)positionToRotateTo % 360;
-    if(positionToRotateTo < 0) positionToRotateTo +=360;
+    if(positionToRotateTo > 360)
+        positionToRotateTo = (int)positionToRotateTo % 360;
+    if(positionToRotateTo < 0)
+        positionToRotateTo +=360;
 
+    ROS_INFO_STREAM("currentDegrees: " << currentDegrees << " positionToRotateTo: " << positionToRotateTo << " degrees: " << degrees << " clockwise: " << clockwise << " startRelativeDegrees: " << startRelativeDegrees);
 
     if(rotateTo(positionToRotateTo)){
         startRelativeDegrees = -1;

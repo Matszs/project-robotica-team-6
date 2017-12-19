@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
 
 	ros::Subscriber buttons             = n.subscribe("/mobile_base/events/button", 100, buttonsCallback);
 	ros::Subscriber imuData             = n.subscribe("/mobile_base/sensors/imu_data", 1, imuDataCallback);
-	ros::Subscriber bumperSubscriber    = n.subscribe("/mobile_base/events/bumper", 1, bumperCallback);
+	ros::Subscriber bumperSubscriber    = n.subscribe("/mobile_base/events/bumper", 10, bumperCallback);
 
 	/*robot.printRotationPossibilities();
 	robot.decreaseRotationPossibilities(315, 90, 2);
