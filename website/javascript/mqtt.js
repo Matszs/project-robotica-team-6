@@ -18,6 +18,7 @@ $(function() {
         console.log("onConnect");
         client.subscribe("ros/grid_field");
         client.subscribe("ros/location");
+        client.subscribe("ros/degrees");
 
         $('#status').addClass('online').removeClass('offline');
     }
@@ -69,6 +70,11 @@ $(function() {
 
             drawLocation(selectedGrid.x, selectedGrid.y);
             drawGrid();
+        }
+
+        if(message.destinationName == 'ros/degrees') {
+
+            $('#kobuki-view').css('transform', 'rotate(' + (parseFloat(json['data'])) + 'deg)');
         }
     }
 

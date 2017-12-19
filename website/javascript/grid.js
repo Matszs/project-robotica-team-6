@@ -170,13 +170,13 @@ $(function() {
 
         var selectedGrid = getCoordinatesFromMousePosition(xPosition, yPosition);
 
-        gridBlocks.push({
+        /*gridBlocks.push({
             'x': selectedGrid.x,
             'y': selectedGrid.y,
             'type': 0
         });
 
-        drawGrid();
+        drawGrid();*/
     });
 
 });

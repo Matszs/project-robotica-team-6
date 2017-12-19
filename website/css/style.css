@@ -104,3 +104,30 @@ hr {
 #status.offline {
     background: #ff272d;
 }
+
+#kobuki-view {
+    height: 200px;
+    position: relative;
+}
+
+#kobuki-view img {
+    height: 100px;
+    left: 50%;
+    margin: -50px 0 0 -50px;
+    position: absolute;
+    top: 50%;
+    width: 100px;
+}
+
+#kobuki-view #arrow {
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 10px solid #ff3a41;
+
+    left: 50%;
+    margin: -65px 0 0 -10px;
+    position: absolute;
+    top: 50%;
+}
