@@ -21,12 +21,15 @@ using namespace kobuki_mapper;
 class Robot {
 
     private:
-        ros::Publisher gridFieldPublisher;
         ros::Publisher currentLocationPublisher;
         ros::Publisher cmd_vel_publisher;
         ros::Publisher degrees_publisher;
 
         std::vector<GridPoint> grid;
+
+        Map _map;
+        Rotation _rotation;
+
         int currentX = -100;
         int currentY = 100;
 
@@ -35,7 +38,8 @@ class Robot {
 
         float cameraDepth = 0;
 
-        int ultrasoneValues[4] = {1000, 1000, 1000, 1000}; // front, right, back, left (vooraanzicht)
+        bool bumper[3] = { false, false, false }; // left, center, right
+        int ultrasoneValues[4] = { 1000, 1000, 1000, 1000 }; // front, right, back, left (vooraanzicht)
 
         bool driveForward = true;
         bool isStopped = false;
@@ -44,19 +48,12 @@ class Robot {
         int turnDirection = 0;
 
         float wallDistance = 15;
-        ros::Duration turningDuration; // old?
-        ros::Time turningStarted; // old?
 
         float linear = 0.2;
         float angle = 0.75;
 
-        int rotationPossibilities[360]; // 0 - 359
-
-
         int degreesOfRotation = -1;
         int degreesAddRotation = -1;
-
-
 
         bool isDrivingKnownPath = false;
 
@@ -77,6 +74,13 @@ class Robot {
         ros::Duration driveToGapDuration;
         ros::Time driveToGapStartTime;
 
+        int distanceToLeft = -1;
+        int distanceToRight = -1;
+
+
+
+
+
         double startDegrees = -1;
         double startRelativeDegrees = -1;
 
@@ -85,18 +89,16 @@ class Robot {
         bool driveToPoint = false;
         GridPoint drivePoint;
 
-        void updateRotationPossibilities(int offset, int length, int math);
-        void drive_autonomous();
-        void drive_to_point();
-
-        bool bumper[3] = {false,false,false};
-
+        void driveAutonomous();
+        void driveByPath();
+        void findGap();
 
     public:
 
+        Map * map();
+        Rotation * rotation();
+
         void init(ros::NodeHandle * nodeHandle);
-        void addTile(int x, int y, int type);
-        GridPoint * getTile(int x, int y);
         void setRotation(float orientationZ, float angularZ);
         void setCurrentPosition(int x, int y);
         void setCameraDepth(float depth);
@@ -108,20 +110,15 @@ class Robot {
 
         static int calculateGridDistance(float input);
         void drive();
-        void resetRotationPossibilities();
-        void increaseRotationPossibilities(int offset, int length, int steps);
-        void decreaseRotationPossibilities(int index, int length, int steps);
-        void printRotationPossibilities();
-        int getRotationDirection();
 
-        void calculatePath();
+        void calculatePath(); // testing the pathfinder...
 
         void setOrientation(geometry_msgs::Quaternion orientation);
 
         double getDegrees();
         bool rotateTo(int degrees);
+        bool rotateTo(int degrees, bool fixDegrees);
         bool rotateBy(int degrees, bool clockwise);
-
 
         geometry_msgs::Quaternion orientation;
         bool hasOrientation;
