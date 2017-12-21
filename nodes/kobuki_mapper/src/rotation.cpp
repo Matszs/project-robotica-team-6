@@ -1,6 +1,6 @@
 #include "rotation.h"
 
-Rotation:Rotation(Robot * robot) {
+Rotation:init(Robot * robot) {
     this->robot = &robot;
 }
 

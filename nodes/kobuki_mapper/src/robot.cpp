@@ -1,4 +1,6 @@
 #include "robot.h"
+#include "rotation.h"
+#include "map.h"
 
 void Robot::init(ros::NodeHandle * nodeHandle) {
     currentLocationPublisher    = nodeHandle->advertise<GridPoint>("/location", 100);
@@ -6,19 +8,15 @@ void Robot::init(ros::NodeHandle * nodeHandle) {
     degrees_publisher           = nodeHandle->advertise<std_msgs::Float64>("/degrees", 1);
     time_publisher              = nodeHandle->advertise<std_msgs::Int32>("/time", 1); // TODO INT?
 
-    _map = Map(&nodeHandle, &this);
-    _rotation = Rotation(&this);
-    rotation().reset();
+    _map->init(nodeHandle, this);
+    _rotation->init(this);
+    (*rotation()).reset();
 }
 
 void Robot::publishTime() {
-    if(!startTime)
-        startTime = ros::Time::now();
-
-    std_msgs::int32 runningTime;
-    runningTime.time = startTime - ros::Time::now();
+    std_msgs::Int32 runningTime;
+    runningTime.data = startTime.toSec() - ros::Time::now().toSec();
     time_publisher.publish(runningTime);
-
 }
 
 void Robot::setOrientation(geometry_msgs::Quaternion orientation) {
@@ -47,10 +45,10 @@ void Robot::setRotation(float orientationZ, float angularZ) {
 }
 
 void Robot::setCurrentPosition(int x, int y) {
-    GridPoint * gridPoint = map().getTile(x, y);
+    GridPoint * gridPoint = (*map()).getTile(x, y);
 
     if(gridPoint == nullptr) {
-        map().addTile(x, y, 1); // 1 because it is the current position, so it is walkable.
+        (*map()).addTile(x, y, 1); // 1 because it is the current position, so it is walkable.
     }
 
     if(x != currentX || y != currentY) {
@@ -89,7 +87,7 @@ bool Robot::getBumperState(int index){
     return bumper[index];
 }
 
-void findGap() {
+void Robot::findGap() {
 
     int front = ultrasoneValues[0];
     int back = ultrasoneValues[2];
@@ -203,8 +201,8 @@ void findGap() {
     }
 }
 
-void Robot::drive_autonomous() {
-    resetRotationPossibilities();
+void Robot::driveAutonomous() {
+    (*rotation()).reset();
 
     int front = ultrasoneValues[0];
     int back = ultrasoneValues[2];
@@ -288,41 +286,42 @@ void Robot::drive_autonomous() {
 
         // determine if the robot can rotate to specific directions, otherwise substract 2
         if(!canTurnRight)
-            rotation().decrease(225, 90, 2);
+            (*rotation()).decrease(225, 90, 2);
         if(!canTurnLeft)
-            rotation().decrease(45, 90, 2);
+            (*rotation()).decrease(45, 90, 2);
         if(!canRideForward)
-            rotation().decrease(315, 90, 2);
+            (*rotation()).decrease(315, 90, 2);
         if(!canRideBackward)
-            rotation().decrease(135, 90, 2);
+            (*rotation()).decrease(135, 90, 2);
 
         // Check bumper states and subtract 1 from the rotation possibilities
         if(getBumperState(0))
-            rotation().decrease(225, 90, 1);
+            (*rotation()).decrease(225, 90, 1);
         if(getBumperState(1))
-            rotation().decrease(315, 90, 1);
+            (*rotation()).decrease(315, 90, 1);
         if(getBumperState(2))
-            rotation().decrease(45, 90, 1);
+            (*rotation()).decrease(45, 90, 1);
 
         // check which direction we already visited.
         enum direction d;
         for(int d = FRONT; d <= LEFT; d++) {
             ROS_INFO_STREAM("direction: " << d << " <-> " << (enum direction)d);
 
-            if(map().checkTileDirection((enum direction)d)) {
+            if((*map()).checkTileDirection((enum direction)d)) {
                 int degreestToBlockFrom = 315 + (90 * d);
+
                 if(degreestToBlockFrom > 359)
                     degreestToBlockFrom -= 360;
 
-                rotation().decrease(degreestToBlockFrom, 90, 1);
+                (*rotation()).decrease(degreestToBlockFrom, 90, 1);
             }
         }
 
         // Print out all the degrees and their score.
-        rotation().print();
+        (*rotation()).print();
 
         // Get one direction from the possible directions based on the score.
-        degreesAddRotation = rotation().getDirection();
+        degreesAddRotation = (*rotation()).getDirection();
         turnDirection = 1;
 
         if(degreesAddRotation == -1) {
@@ -512,12 +511,12 @@ void Robot::calculatePath() {
     pathfinder.calculatePath();
 }
 
-Map * map() {
-    return &this->_map;
+Map * Robot::map() {
+    return _map;
 }
 
-Rotation * rotation() {
-    return &this->_rotation;
+Rotation * Robot::rotation() {
+    return _rotation;
 }
 
 // STATIC

@@ -10,10 +10,12 @@
 #include <tf/transform_datatypes.h>
 #include <sensor_msgs/Imu.h>
 #include "std_msgs/Float64.h"
+#include "std_msgs/Int32.h"
+
+class Rotation;
+class Map;
 
 #include "pathfinder.h"
-#include "rotation.h"
-#include "map.h"
 
 #define WALL_DISTANCE_MIN 100
 
@@ -28,12 +30,12 @@ class Robot {
         ros::Publisher degrees_publisher;
         ros::Publisher time_publisher;
 
-        ros::Time startTime;
+        ros::Time startTime = ros::Time::now();
 
         std::vector<GridPoint> grid;
 
-        Map _map;
-        Rotation _rotation;
+        Map * _map;
+        Rotation * _rotation;
 
         int currentX = -100;
         int currentY = 100;
@@ -102,7 +104,7 @@ class Robot {
         void setCurrentPosition(int x, int y);
         void setCameraDepth(float depth);
         void setUltrasoneSensorDistance(int sensor, int distance);
-        void Robot::publishTime();
+        void publishTime();
         void setBumperState(int index, bool state);
         bool getBumperStates();
         bool getBumperState(int index);

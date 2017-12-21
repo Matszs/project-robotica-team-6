@@ -1,6 +1,6 @@
 #include "map.h"
 
-Map:Map(ros::NodeHandle * nodeHandle, Robot * robot) {
+Map:init(ros::NodeHandle * nodeHandle, Robot * robot) {
     gridFieldPublisher = nodeHandle->advertise<GridPoint>("/grid_field", 100);
     this->robot = &robot;
 }

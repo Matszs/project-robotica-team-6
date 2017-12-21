@@ -80,7 +80,7 @@ $(function() {
 
         if(message.destinationName == 'ros/time') {
 
-            var secondsRunning = parseInt(json['time']);
+            var secondsRunning = parseInt(json['data']);
 
             var hours = 0;
             var minutes = secondsRunning / 60;
@@ -92,6 +92,12 @@ $(function() {
             }
 
             $('#time').text((hours > 0 ? hours + ':' : '' ) + minutes + ':' + seconds);
+
+        }
+
+        if(message.destinationName == 'ros/speed') {
+
+            $('#speed').text(json['data']);
 
         }
     }
