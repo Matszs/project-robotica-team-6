@@ -7,6 +7,8 @@ void Robot::init(ros::NodeHandle * nodeHandle) {
     cmd_vel_publisher           = nodeHandle->advertise<geometry_msgs::Twist>("/mobile_base/commands/velocity", 1);
     degrees_publisher           = nodeHandle->advertise<std_msgs::Float64>("/degrees", 1);
     time_publisher              = nodeHandle->advertise<std_msgs::Int32>("/time", 1); // TODO INT?
+    speed_publisher             = nodeHandle->advertise<std_msgs::Float64>("/speed", 1);
+
 
     _map->init(nodeHandle, this);
     _rotation->init(this);
@@ -17,6 +19,13 @@ void Robot::publishTime() {
     std_msgs::Int32 runningTime;
     runningTime.data = startTime.toSec() - ros::Time::now().toSec();
     time_publisher.publish(runningTime);
+}
+
+void Robot::setSpeed(float speed){
+    std_msgs::Float64 speedPubData;
+    speedPubData.data = speed;
+
+    speed_publisher.publish(speedPubData);
 }
 
 void Robot::setOrientation(geometry_msgs::Quaternion orientation) {

@@ -42,6 +42,7 @@ void odomCallback(const nav_msgs::OdometryConstPtr& msg) {
 
     // Let the robot know it's position
     robot.setCurrentPosition(positionXGrid, positionYGrid);
+    robot.setSpeed(msg->twist.twist.linear.x);
 }
 
 void buttonsCallback(const kobuki_msgs::ButtonEventConstPtr& msg) {

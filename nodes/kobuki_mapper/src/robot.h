@@ -29,6 +29,7 @@ class Robot {
         ros::Publisher cmd_vel_publisher;
         ros::Publisher degrees_publisher;
         ros::Publisher time_publisher;
+        ros::Publisher speed_publisher;
 
         ros::Time startTime = ros::Time::now();
 
@@ -118,6 +119,7 @@ class Robot {
         bool rotateBy(int degrees, bool clockwise);
         geometry_msgs::Quaternion orientation;
         bool hasOrientation;
+        void setSpeed(float speed);
 };
 
 #endif
