@@ -2,6 +2,7 @@
 #define __ROTATION_H_INCLUDED__
 
 #include <ros/ros.h>
+#include "robot.h"
 #define DEFAULT_ROTATION_VALUE 5
 
 using namespace std;

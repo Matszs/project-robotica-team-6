@@ -2,6 +2,7 @@
 #define __MAP_H_INCLUDED__
 
 #include <kobuki_mapper/GridPoint.h>
+#include "robot.h"
 #include <ros/ros.h>
 
 enum direction {

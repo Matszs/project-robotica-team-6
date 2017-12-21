@@ -12,6 +12,8 @@
 #include "std_msgs/Float64.h"
 
 #include "pathfinder.h"
+#include "rotation.h"
+#include "map.h"
 
 #define WALL_DISTANCE_MIN 100
 
@@ -24,6 +26,9 @@ class Robot {
         ros::Publisher currentLocationPublisher;
         ros::Publisher cmd_vel_publisher;
         ros::Publisher degrees_publisher;
+        ros::Publisher time_publisher;
+
+        ros::Time startTime;
 
         std::vector<GridPoint> grid;
 
@@ -77,14 +82,8 @@ class Robot {
         int distanceToLeft = -1;
         int distanceToRight = -1;
 
-
-
-
-
         double startDegrees = -1;
         double startRelativeDegrees = -1;
-
-
 
         bool driveToPoint = false;
         GridPoint drivePoint;
@@ -103,26 +102,20 @@ class Robot {
         void setCurrentPosition(int x, int y);
         void setCameraDepth(float depth);
         void setUltrasoneSensorDistance(int sensor, int distance);
-
+        void Robot::publishTime();
         void setBumperState(int index, bool state);
         bool getBumperStates();
         bool getBumperState(int index);
-
         static int calculateGridDistance(float input);
         void drive();
-
         void calculatePath(); // testing the pathfinder...
-
         void setOrientation(geometry_msgs::Quaternion orientation);
-
         double getDegrees();
         bool rotateTo(int degrees);
         bool rotateTo(int degrees, bool fixDegrees);
         bool rotateBy(int degrees, bool clockwise);
-
         geometry_msgs::Quaternion orientation;
         bool hasOrientation;
-
 };
 
 #endif

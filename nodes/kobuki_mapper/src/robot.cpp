@@ -4,20 +4,37 @@ void Robot::init(ros::NodeHandle * nodeHandle) {
     currentLocationPublisher    = nodeHandle->advertise<GridPoint>("/location", 100);
     cmd_vel_publisher           = nodeHandle->advertise<geometry_msgs::Twist>("/mobile_base/commands/velocity", 1);
     degrees_publisher           = nodeHandle->advertise<std_msgs::Float64>("/degrees", 1);
+    time_publisher              = nodeHandle->advertise<std_msgs::Int32>("/time", 1); // TODO INT?
 
     _map = Map(&nodeHandle, &this);
     _rotation = Rotation(&this);
     rotation().reset();
 }
 
+void Robot::publishTime() {
+    if(!startTime)
+        startTime = ros::Time::now();
+
+    std_msgs::int32 runningTime;
+    runningTime.time = startTime - ros::Time::now();
+    time_publisher.publish(runningTime);
+
+}
+
 void Robot::setOrientation(geometry_msgs::Quaternion orientation) {
+    double tmpDegrees = getDegrees(); // get 'old' degrees before we change the data
+
     this->orientation = orientation;
     hasOrientation = true;
 
-    std_msgs::Float64 degrees;
-    degrees.data = getDegrees();
+    double degrees = getDegrees(); // get current degrees
 
-    degrees_publisher.publish(degrees);
+    if(tmpDegrees != degrees) { // if there is a change, publish this.
+        std_msgs::Float64 degreesPubData;
+        degreesPubData.data = degrees;
+
+        degrees_publisher.publish(degreesPubData);
+    }
 }
 
 void Robot::setRotation(float orientationZ, float angularZ) {
@@ -73,6 +90,13 @@ bool Robot::getBumperState(int index){
 }
 
 void findGap() {
+
+    int front = ultrasoneValues[0];
+    int back = ultrasoneValues[2];
+    int left = ultrasoneValues[3];
+    int right = ultrasoneValues[1];
+
+
     // Are we already at the end of a gap?
     if(!endOfGap) {
         // START OF RIGHT
@@ -90,7 +114,7 @@ void findGap() {
                 gapRightStart = gridPoint;
                 gapRightStartFound = true;
             }
-        } else if(right < (distanceToRight + WALL_DISTANCE_MIN)) { // if the right-side has found the 'end' of the gap ...
+        } else if(right < (distanceToRight + WALL_DISTANCE_MIN) || front <= wallDistance) { // if the right-side has found the 'end' of the gap ...
              GridPoint gridPoint;
                  gridPoint.x = currentX;
                  gridPoint.y = currentY;
@@ -122,7 +146,7 @@ void findGap() {
                 gapLeftStart = gridPoint;
                 gapLeftStartFound = true;
             }
-        } else if(left < (distanceToLeft + WALL_DISTANCE_MIN)) { // if the left-side has found the 'end' of the gap ...
+        } else if(left < (distanceToLeft + WALL_DISTANCE_MIN) || front <= wallDistance) { // if the left-side has found the 'end' of the gap ...
              GridPoint gridPoint;
                  gridPoint.x = currentX;
                  gridPoint.y = currentY;
@@ -262,7 +286,7 @@ void Robot::drive_autonomous() {
     if(!driveForward && isStopped && mustRotate) {
         mustRotate = false;
 
-        // determine if the robot can rotate to specific directions
+        // determine if the robot can rotate to specific directions, otherwise substract 2
         if(!canTurnRight)
             rotation().decrease(225, 90, 2);
         if(!canTurnLeft)

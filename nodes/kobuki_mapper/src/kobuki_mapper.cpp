@@ -86,8 +86,11 @@ void bumperCallback(const kobuki_msgs::BumperEventConstPtr& msg){
 void spin() {
     ros::Rate spin_rate(10);
     while(ros::ok) {
-        if(is_activated)
+        if(is_activated) {
             robot.drive();
+
+            robot.publishTime();
+        }
 
         ros::spinOnce();
         spin_rate.sleep();

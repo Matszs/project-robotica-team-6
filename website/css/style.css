@@ -21,7 +21,7 @@ canvas {
     z-index: 10;
 }
 
-#box-view {
+#box-view, #stats-view, #time-view {
     background: #fff;
     box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
     border-radius: 3px;
@@ -32,6 +32,35 @@ canvas {
     position: absolute;
     z-index: 11;
     width: 300px;
+}
+
+#stats-view {
+    height: 20px;
+    text-align: center;
+    top: 330px;
+    width: 80px;
+}
+
+#time-view {
+    height: 20px;
+
+    left: 155px;
+    top: 330px;
+    width: 165px;
+}
+
+#stats-view span, #time-view span {
+    font-size: 18px;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+#time-view span {
+    margin-left: 40px;
+}
+
+#stats-view sub {
+
 }
 
 h1 {

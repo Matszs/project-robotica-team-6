@@ -19,6 +19,7 @@ $(function() {
         client.subscribe("ros/grid_field");
         client.subscribe("ros/location");
         client.subscribe("ros/degrees");
+        client.subscribe("ros/time");
 
         $('#status').addClass('online').removeClass('offline');
     }
@@ -75,6 +76,23 @@ $(function() {
         if(message.destinationName == 'ros/degrees') {
 
             $('#kobuki-view').css('transform', 'rotate(' + (parseFloat(json['data'])) + 'deg)');
+        }
+
+        if(message.destinationName == 'ros/time') {
+
+            var secondsRunning = parseInt(json['time']);
+
+            var hours = 0;
+            var minutes = secondsRunning / 60;
+            var seconds = secondsRunning % 60;
+
+            if(minutes > 60) {
+                hours = minutes / 60;
+                minutes = minutes % 60;
+            }
+
+            $('#time').text((hours > 0 ? hours + ':' : '' ) + minutes + ':' + seconds);
+
         }
     }
 
