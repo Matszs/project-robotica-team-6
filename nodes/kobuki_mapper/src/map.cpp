@@ -1,8 +1,9 @@
+#include "robot.h"
 #include "map.h"
 
-Map:init(ros::NodeHandle * nodeHandle, Robot * robot) {
+Map::Map(ros::NodeHandle * nodeHandle, Robot * robot) {
     gridFieldPublisher = nodeHandle->advertise<GridPoint>("/grid_field", 100);
-    this->robot = &robot;
+    this->robot = robot;
 }
 
 GridPoint* Map::getTile(int x, int y) {
@@ -31,18 +32,18 @@ void Map::addTile(int x, int y, int type) {
     gridFieldPublisher.publish(gridPoint);
 }
 
-bool Map::checkTileDirection(enum direction d){
-    float directionDegrees = getDegrees() + (d * 90);
+bool Map::checkTileDirection(enum direction d, double degrees){
+    float directionDegrees = degrees + (d * 90);
 
     if(directionDegrees > 359)
         directionDegrees -= 360;
 
     ROS_INFO_STREAM("Map: directionDegrees: " << directionDegrees);
 
-    int directionY = currentY - round(cos(round(directionDegrees) * M_PI / 180) * 1); // cos(0 * pi / 180) * 5 = 5
-    int directionX = currentX + round(sin(round(directionDegrees) * M_PI / 180) * 1); // sin(0 * pi / 180) * 5 = 0
+    int directionY = (*this->robot).getCurrentY() - round(cos(round(directionDegrees) * M_PI / 180) * 1); // cos(0 * pi / 180) * 5 = 5
+    int directionX = (*this->robot).getCurrentX() + round(sin(round(directionDegrees) * M_PI / 180) * 1); // sin(0 * pi / 180) * 5 = 0
 
     ROS_INFO_STREAM("Map: tile: x: " << directionX << " y: " << directionY);
 
-    return (getTile(directionX, directionY) != nullptr)
+    return (getTile(directionX, directionY) != nullptr);
 }

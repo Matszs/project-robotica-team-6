@@ -24,10 +24,10 @@ class Map {
         Robot * robot;
 
     public:
-        void init(ros::NodeHandle * nodeHandle, Robot * robot);
+        Map(ros::NodeHandle * nodeHandle, Robot * robot);
         GridPoint* getTile(int x, int y);
         void addTile(int x, int y, int type);
-        bool checkTileDirection(enum direction);
+        bool checkTileDirection(enum direction, double degrees);
 
 
 };

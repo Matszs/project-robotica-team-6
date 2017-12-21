@@ -4,6 +4,7 @@
 #include <ros/ros.h>
 #include <algorithm>
 
+#include <kobuki_mapper/Info.h>
 #include <kobuki_mapper/GridPoint.h>
 #include <geometry_msgs/Twist.h>
 #include <tf/transform_listener.h>
@@ -30,8 +31,9 @@ class Robot {
         ros::Publisher degrees_publisher;
         ros::Publisher time_publisher;
         ros::Publisher speed_publisher;
+        ros::Publisher info_publisher;
 
-        ros::Time startTime = ros::Time::now();
+        ros::Time startTime;
 
         std::vector<GridPoint> grid;
 
@@ -40,6 +42,10 @@ class Robot {
 
         int currentX = -100;
         int currentY = 100;
+
+        float speedBuffer = 0;
+        int timeBuffer = 0;
+        int batteryBuffer = 0;
 
         float degrees = 0;
         float angularZ = 0;
@@ -120,6 +126,11 @@ class Robot {
         geometry_msgs::Quaternion orientation;
         bool hasOrientation;
         void setSpeed(float speed);
+        void runTasks();
+        void setBatteryPercentage(int batteryPercentage);
+
+        int getCurrentX();
+        int getCurrentY();
 };
 
 #endif

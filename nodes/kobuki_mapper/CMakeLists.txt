@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
         FILES
         GridPoint.msg
+        Info.msg
 )
 
 find_package(PCL REQUIRED COMPONENTS)

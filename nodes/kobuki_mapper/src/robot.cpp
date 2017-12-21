@@ -8,40 +8,50 @@ void Robot::init(ros::NodeHandle * nodeHandle) {
     degrees_publisher           = nodeHandle->advertise<std_msgs::Float64>("/degrees", 1);
     time_publisher              = nodeHandle->advertise<std_msgs::Int32>("/time", 1); // TODO INT?
     speed_publisher             = nodeHandle->advertise<std_msgs::Float64>("/speed", 1);
+    info_publisher              = nodeHandle->advertise<Info>("/info", 1);
 
+    startTime = ros::Time::now();
 
-    _map->init(nodeHandle, this);
-    _rotation->init(this);
+    _map = new Map(nodeHandle, this);
+    _rotation = new Rotation(this);
+
     (*rotation()).reset();
 }
 
 void Robot::publishTime() {
-    std_msgs::Int32 runningTime;
-    runningTime.data = startTime.toSec() - ros::Time::now().toSec();
-    time_publisher.publish(runningTime);
+    int counter = ros::Time::now().toSec() - startTime.toSec();
+
+    ROS_INFO_STREAM("time: " << counter);
+
+    if(timeBuffer != counter) {
+        std_msgs::Int32 runningTime;
+        runningTime.data = counter;
+        timeBuffer = counter;
+        time_publisher.publish(runningTime);
+    }
+}
+
+void Robot::runTasks(){
+    Info info;
+    info.time = timeBuffer;
+    info.speed = speedBuffer;
+    info.degrees = getDegrees();
+    info.battery = batteryBuffer;
+
+    info_publisher.publish(info);
 }
 
 void Robot::setSpeed(float speed){
-    std_msgs::Float64 speedPubData;
-    speedPubData.data = speed;
+    speedBuffer = speed;
+}
 
-    speed_publisher.publish(speedPubData);
+void Robot::setBatteryPercentage(int batteryPercentage){
+    batteryBuffer = batteryPercentage;
 }
 
 void Robot::setOrientation(geometry_msgs::Quaternion orientation) {
-    double tmpDegrees = getDegrees(); // get 'old' degrees before we change the data
-
     this->orientation = orientation;
     hasOrientation = true;
-
-    double degrees = getDegrees(); // get current degrees
-
-    if(tmpDegrees != degrees) { // if there is a change, publish this.
-        std_msgs::Float64 degreesPubData;
-        degreesPubData.data = degrees;
-
-        degrees_publisher.publish(degreesPubData);
-    }
 }
 
 void Robot::setRotation(float orientationZ, float angularZ) {
@@ -51,6 +61,14 @@ void Robot::setRotation(float orientationZ, float angularZ) {
     degrees = (degrees > 0 ? 360 - (360 * degrees / 2) : 360 * abs(degrees) / 2);
 
     this->angularZ = angularZ;
+}
+
+int Robot::getCurrentX() {
+    return currentX;
+}
+
+int Robot::getCurrentY() {
+    return currentY;
 }
 
 void Robot::setCurrentPosition(int x, int y) {
@@ -316,7 +334,7 @@ void Robot::driveAutonomous() {
         for(int d = FRONT; d <= LEFT; d++) {
             ROS_INFO_STREAM("direction: " << d << " <-> " << (enum direction)d);
 
-            if((*map()).checkTileDirection((enum direction)d)) {
+            if((*map()).checkTileDirection((enum direction)d, getDegrees())) {
                 int degreestToBlockFrom = 315 + (90 * d);
 
                 if(degreestToBlockFrom > 359)

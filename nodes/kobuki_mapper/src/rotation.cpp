@@ -1,7 +1,7 @@
 #include "rotation.h"
 
-Rotation:init(Robot * robot) {
-    this->robot = &robot;
+Rotation::Rotation(Robot * robot) {
+    this->robot = robot;
 }
 
 void Rotation::reset() {

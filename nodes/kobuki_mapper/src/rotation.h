@@ -14,7 +14,7 @@ class Rotation {
         int rotationPossibilities[360]; // 0 - 359
 
     public:
-        void init(Robot * robot);
+        Rotation(Robot * robot);
         void reset();
         void update(int index, int length, int math);
         void decrease(int index, int length, int steps);

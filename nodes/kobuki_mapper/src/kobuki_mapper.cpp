@@ -10,6 +10,8 @@
 #include <sensor_msgs/Imu.h>
 
 #include <kobuki_mapper/GridPoint.h>
+#include <kobuki_mapper/Info.h>
+#include <kobuki_msgs/SensorState.h>
 #include <kobuki_depth/CameraPoint.h>
 #include <kobuki_ultrasone/UltrasoneSensors.h>
 #include <kobuki_msgs/ButtonEvent.h>
@@ -83,6 +85,10 @@ void bumperCallback(const kobuki_msgs::BumperEventConstPtr& msg){
     }
 }
 
+void batteryCallback(const kobuki_msgs::SensorStateConstPtr& msg){
+    robot.setBatteryPercentage(msg->battery / 160 * 100);
+}
+
 
 void spin() {
     ros::Rate spin_rate(10);
@@ -90,11 +96,13 @@ void spin() {
         if(is_activated) {
             robot.drive();
 
-            robot.publishTime();
         }
 
         ros::spinOnce();
         spin_rate.sleep();
+        //robot.publishTime();
+        robot.runTasks();
+
     }
 }
 
@@ -114,6 +122,7 @@ int main(int argc, char **argv) {
 	ros::Subscriber buttons             = n.subscribe("/mobile_base/events/button", 100, buttonsCallback);
 	ros::Subscriber imuData             = n.subscribe("/mobile_base/sensors/imu_data", 1, imuDataCallback);
 	ros::Subscriber bumperSubscriber    = n.subscribe("/mobile_base/events/bumper", 10, bumperCallback);
+	ros::Subscriber battery             = n.subscribe("/mobile_base/sensors/core", 10, batteryCallback);
 
 	/*robot.printRotationPossibilities();
 	robot.decreaseRotationPossibilities(315, 90, 2);
