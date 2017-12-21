@@ -24,11 +24,11 @@ void Rotation::update(int index, int length, int math) {
 }
 
 void Rotation::decrease(int index, int length, int steps) {
-    update(index, length, 1 * steps);
+    update(index, length, -1 * steps);
 }
 
 void Rotation::increase(int index, int length, int steps) {
-    update(index, length, -1 * steps);
+    update(index, length, 1 * steps);
 }
 
 void Rotation::print() {

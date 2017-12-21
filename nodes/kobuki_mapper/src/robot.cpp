@@ -33,7 +33,7 @@ void Robot::publishTime() {
 
 void Robot::runTasks(){
     Info info;
-    info.time = timeBuffer;
+    info.time = ros::Time::now().toSec() - startTime.toSec();
     info.speed = speedBuffer;
     info.degrees = getDegrees();
     info.battery = batteryBuffer;
@@ -121,13 +121,19 @@ void Robot::findGap() {
     int left = ultrasoneValues[3];
     int right = ultrasoneValues[1];
 
+    ROS_INFO_STREAM("ultra left: " << left);
+
 
     // Are we already at the end of a gap?
+    ROS_INFO_STREAM("!endOfGap " << !endOfGap);
     if(!endOfGap) {
         // START OF RIGHT
         // Check if we already set the start-point of a gap for the right side.
+        ROS_INFO_STREAM("!gapRightStartFound " << !gapRightStartFound);
+        ROS_INFO_STREAM("right < (distanceToRight + WALL_DISTANCE_MIN) || front <= wallDistance " << (right < (distanceToRight + WALL_DISTANCE_MIN) || front <= wallDistance));
         if(!gapRightStartFound) {
             // if the distance to the right is bigger then the WALL_DISTANCE_MIN, there is a gap
+            ROS_INFO_STREAM("right > (distanceToRight + WALL_DISTANCE_MIN) " << (right > (distanceToRight + WALL_DISTANCE_MIN)));
             if(right > (distanceToRight + WALL_DISTANCE_MIN)) {
                 GridPoint gridPoint;
                     gridPoint.x = currentX;
@@ -158,8 +164,11 @@ void Robot::findGap() {
 
         // START OF LEFT
         // Check if we already set the start-point of a gap for the left side.
+        ROS_INFO_STREAM("!gapLeftStartFound " << !gapLeftStartFound);
         if(!gapLeftStartFound) {
             // if the distance to the left is bigger then the WALL_DISTANCE_MIN, there is a gap
+            ROS_INFO_STREAM("left > (distanceToLeft + WALL_DISTANCE_MIN) " << (left > (distanceToLeft + WALL_DISTANCE_MIN)));
+            ROS_INFO_STREAM("left < (distanceToLeft + WALL_DISTANCE_MIN) || front <= wallDistance " << (left < (distanceToLeft + WALL_DISTANCE_MIN) || front <= wallDistance));
             if(left > (distanceToLeft + WALL_DISTANCE_MIN)) {
                 GridPoint gridPoint;
                     gridPoint.x = currentX;
@@ -191,11 +200,13 @@ void Robot::findGap() {
         // GAP FOUND, DO SOMETHING
 
         // check if we already rotated the robot
+        ROS_INFO_STREAM("!hasRotatedBecauseOfGap " << !hasRotatedBecauseOfGap);
         if(!hasRotatedBecauseOfGap) {
             driveForward = false;
         } else {
             // we already have rotated the robot, now lets drive it forward till the center of the gap.
             // Check if we have calculated the time needed to drive forward.
+            ROS_INFO_STREAM("driveToGapDuration.isZero() " << driveToGapDuration.isZero());
             if(driveToGapDuration.isZero()) {
 
                 int distanceX = 0;
@@ -212,6 +223,20 @@ void Robot::findGap() {
                 distanceX -= currentX;
                 distanceY -= currentY;
 
+
+                ROS_INFO_STREAM("**********************");
+
+                ROS_INFO_STREAM("gapLeftStart.x " << gapLeftStart.x);
+                ROS_INFO_STREAM("gapLeftStart.y " << gapLeftStart.y);
+                ROS_INFO_STREAM("-------");
+                ROS_INFO_STREAM("gapLeftEnd.x " << gapLeftEnd.x);
+                ROS_INFO_STREAM("gapLeftEnd.y " << gapLeftEnd.y);
+
+                ROS_INFO_STREAM("**********************");
+
+
+
+
                 // calculate relative distance btween new position and current position
                 float totalDistance = sqrt(pow(distanceX - currentX, 2) + pow(distanceY - currentY, 2));
                 ROS_INFO_STREAM("Will drive forward " << (totalDistance * 10) << " meter to gap.");
@@ -221,8 +246,15 @@ void Robot::findGap() {
                 driveToGapStartTime = ros::Time::now();
             }
 
-            if ((ros::Time::now() - driveToGapStartTime) < driveToGapDuration) {
+            ROS_INFO_STREAM("ros::Time::now().toSec()  " << ros::Time::now().toSec());
+            ROS_INFO_STREAM("driveToGapStartTime.toSec()  " << driveToGapStartTime.toSec());
+            ROS_INFO_STREAM("(ros::Time::now() - driveToGapStartTime): " << (ros::Time::now().toSec() - driveToGapStartTime.toSec()));
+            ROS_INFO_STREAM("driveToGapDuration: " << driveToGapDuration.toSec());
+            ROS_INFO_STREAM("(ros::Time::now() - driveToGapStartTime) > driveToGapDuration: " << ((ros::Time::now().toSec() - driveToGapStartTime.toSec()) > driveToGapDuration.toSec()));
+
+            if ((ros::Time::now().toSec() - driveToGapStartTime.toSec()) > driveToGapDuration.toSec()) {
                 driveForward = false;
+                driveToGapDuration = ros::Duration(0);
             }
         }
     }
@@ -247,7 +279,7 @@ void Robot::driveAutonomous() {
         if(!canRideForward || getBumperStates()) {
             driveForward = false;
         } else {
-            findGap();
+            //findGap();
 
             geometry_msgs::TwistPtr cmd_vel_msg_ptr;
             cmd_vel_msg_ptr.reset(new geometry_msgs::Twist());
@@ -409,13 +441,13 @@ bool Robot::rotateTo(int degrees) {
 bool Robot::rotateTo(int degrees, bool fixDegrees) {
 
     if(fixDegrees) {
-        if(degrees > 87 && degrees < 93)
+        if(degrees >= 80 && degrees <= 100)
             degrees = 90;
-        else if(degrees > 177 && degrees < 183)
+        else if(degrees >= 170 && degrees <= 190)
             degrees = 180;
-        else if(degrees > 267 && degrees < 273)
+        else if(degrees >= 260 && degrees <= 280)
             degrees = 270;
-        else if(degrees > 357 && degrees < 3)
+        else if(degrees >= 350 && degrees <= 10)
             degrees = 0;
     }
 

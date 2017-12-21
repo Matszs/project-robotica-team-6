@@ -61,7 +61,7 @@ class Robot {
         bool isRotating = false;
         int turnDirection = 0;
 
-        float wallDistance = 15;
+        float wallDistance = 20;
 
         float linear = 0.2;
         float angle = 0.75;

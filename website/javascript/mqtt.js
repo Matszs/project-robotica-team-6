@@ -2,7 +2,7 @@ $(function() {
 
 
     // Create a client instance
-    client = new Paho.MQTT.Client("ws.derfu.nl/ws/", 80, "clientId"+Math.floor((Math.random() * 10) + 1));
+    client = new Paho.MQTT.Client("derfu.nl", 9001, "clientId"+Math.floor((Math.random() * 10000000000000) + 1));
 
     // set callback handlers
     client.onConnectionLost = onConnectionLost;
@@ -18,8 +18,7 @@ $(function() {
         console.log("onConnect");
         client.subscribe("ros/grid_field");
         client.subscribe("ros/location");
-        client.subscribe("ros/degrees");
-        client.subscribe("ros/time");
+        client.subscribe("ros/info");
 
         $('#status').addClass('online').removeClass('offline');
     }
@@ -73,31 +72,40 @@ $(function() {
             drawGrid();
         }
 
-        if(message.destinationName == 'ros/degrees') {
+        if(message.destinationName == 'ros/info') {
 
-            $('#kobuki-view').css('transform', 'rotate(' + (parseFloat(json['data'])) + 'deg)');
-        }
+            // degrees
+            $('#kobuki-view').css('transform', 'rotate(' + (parseFloat(json['degrees'])) + 'deg)');
 
-        if(message.destinationName == 'ros/time') {
+            // time
 
-            var secondsRunning = parseInt(json['data']);
+            var secondsRunning = parseInt(json['time']);
 
             var hours = 0;
-            var minutes = secondsRunning / 60;
-            var seconds = secondsRunning % 60;
+            var minutes = parseInt(secondsRunning / 60);
+            var seconds = parseInt(secondsRunning % 60);
 
-            if(minutes > 60) {
-                hours = minutes / 60;
-                minutes = minutes % 60;
+            if(minutes >= 60) {
+                hours = parseInt(minutes / 60);
+                minutes = parseInt(minutes % 60);
             }
 
-            $('#time').text((hours > 0 ? hours + ':' : '' ) + minutes + ':' + seconds);
+            $('#time').text((hours > 0 ? (hours < 10 ? '0' : '') + hours + ':' : '' ) + (minutes < 10 ? '0' : '') + minutes + ':' + (seconds < 10 ? '0' : '') + seconds);
 
-        }
+            // speed
+            var speed = parseFloat(((((parseFloat(json['data']) == 0 ? 0.00 : Math.abs(parseFloat(json['speed']))) * 3.6 * 100) / 100)).toFixed(2));
 
-        if(message.destinationName == 'ros/speed') {
+            $('#speed').text(
+                (speed == 0 ? '0.00' : speed)
+            );
 
-            $('#speed').text(json['data']);
+
+            // battery
+
+            $('#battery span').text(json['battery'] + '%');
+            $('#battery-status').css('width', json['battery'] + '%');
+
+
 
         }
     }

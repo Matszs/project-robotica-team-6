@@ -86,7 +86,7 @@ void bumperCallback(const kobuki_msgs::BumperEventConstPtr& msg){
 }
 
 void batteryCallback(const kobuki_msgs::SensorStateConstPtr& msg){
-    robot.setBatteryPercentage(msg->battery / 160 * 100);
+    robot.setBatteryPercentage((int)(((float)msg->battery / 160 * 100)));
 }
 
 
@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
 	ros::Subscriber buttons             = n.subscribe("/mobile_base/events/button", 100, buttonsCallback);
 	ros::Subscriber imuData             = n.subscribe("/mobile_base/sensors/imu_data", 1, imuDataCallback);
 	ros::Subscriber bumperSubscriber    = n.subscribe("/mobile_base/events/bumper", 10, bumperCallback);
-	ros::Subscriber battery             = n.subscribe("/mobile_base/sensors/core", 10, batteryCallback);
+	ros::Subscriber battery             = n.subscribe("/mobile_base/sensors/core", 1, batteryCallback);
 
 	/*robot.printRotationPossibilities();
 	robot.decreaseRotationPossibilities(315, 90, 2);

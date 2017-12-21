@@ -56,7 +56,8 @@ canvas {
 }
 
 #time-view span {
-    margin-left: 40px;
+    margin-left: 30px;
+    text-align: center;
 }
 
 #stats-view sub {
@@ -159,4 +160,46 @@ hr {
     margin: -65px 0 0 -10px;
     position: absolute;
     top: 50%;
+}
+
+
+#battery {
+    background: #fff;
+    border: 1px solid black;
+    bottom: 0;
+    height: 20px;
+    line-height: 20px;
+    font-size: 14px;
+    font-weight: 100;
+    margin: 0 20px 20px 0;
+    right: 0;
+    position: absolute;
+    text-align: center;
+    text-shadow: 2px 2px 0 #fff;
+    width: 50px;
+}
+
+#battery:after {
+    background: #000;
+    border-radius: 0 5px 5px 0;
+    content: "";
+    position: absolute;
+    margin-right: -5px;
+    margin-top: 2px;
+    right: 0;
+    height: 16px;
+    width: 5px;
+}
+
+#battery-status {
+    background: #22f67a;
+    height: 20px;
+    position: absolute;
+}
+
+#battery span {
+    display: block;
+    position: absolute;
+    z-index: 10;
+    width: 100%;
 }
