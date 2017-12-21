@@ -12,10 +12,12 @@
 #include <kobuki_mapper/GridPoint.h>
 #include <kobuki_mapper/Info.h>
 #include <kobuki_msgs/SensorState.h>
+#include <kobuki_msgs/Sound.h>
 #include <kobuki_depth/CameraPoint.h>
 #include <kobuki_ultrasone/UltrasoneSensors.h>
 #include <kobuki_msgs/ButtonEvent.h>
 #include <kobuki_msgs/BumperEvent.h>
+#include <vision/TrackedPosition.h>
 #include <stdlib.h>
 #include <cstdio>
 
@@ -89,6 +91,13 @@ void batteryCallback(const kobuki_msgs::SensorStateConstPtr& msg){
     robot.setBatteryPercentage((int)(((float)msg->battery / 160 * 100)));
 }
 
+void objectCallback(const vision::TrackedPositionConstPtr & msg){
+    kobuki_msgs::Sound soundObj;
+    soundObj.value = 6;
+    robot.sounds.publish(soundObj);
+}
+
+
 
 void spin() {
     ros::Rate spin_rate(10);
@@ -124,6 +133,7 @@ int main(int argc, char **argv) {
 	ros::Subscriber bumperSubscriber    = n.subscribe("/mobile_base/events/bumper", 10, bumperCallback);
 	ros::Subscriber battery             = n.subscribe("/mobile_base/sensors/core", 1, batteryCallback);
 
+    ros::Subscriber visionObject        = n.subscribe("/vision/tracked_position", 1, objectCallback);
 	/*robot.printRotationPossibilities();
 	robot.decreaseRotationPossibilities(315, 90, 2);
 	robot.printRotationPossibilities();*/

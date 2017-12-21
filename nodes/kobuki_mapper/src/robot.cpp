@@ -9,6 +9,7 @@ void Robot::init(ros::NodeHandle * nodeHandle) {
     time_publisher              = nodeHandle->advertise<std_msgs::Int32>("/time", 1); // TODO INT?
     speed_publisher             = nodeHandle->advertise<std_msgs::Float64>("/speed", 1);
     info_publisher              = nodeHandle->advertise<Info>("/info", 1);
+    sounds                      = nodeHandle->advertise<kobuki_msgs::Sound>("/mobile_base/commands/sound", 100);
 
     startTime = ros::Time::now();
 
@@ -121,8 +122,6 @@ void Robot::findGap() {
     int left = ultrasoneValues[3];
     int right = ultrasoneValues[1];
 
-    ROS_INFO_STREAM("ultra left: " << left);
-
 
     // Are we already at the end of a gap?
     ROS_INFO_STREAM("!endOfGap " << !endOfGap);
@@ -223,20 +222,6 @@ void Robot::findGap() {
                 distanceX -= currentX;
                 distanceY -= currentY;
 
-
-                ROS_INFO_STREAM("**********************");
-
-                ROS_INFO_STREAM("gapLeftStart.x " << gapLeftStart.x);
-                ROS_INFO_STREAM("gapLeftStart.y " << gapLeftStart.y);
-                ROS_INFO_STREAM("-------");
-                ROS_INFO_STREAM("gapLeftEnd.x " << gapLeftEnd.x);
-                ROS_INFO_STREAM("gapLeftEnd.y " << gapLeftEnd.y);
-
-                ROS_INFO_STREAM("**********************");
-
-
-
-
                 // calculate relative distance btween new position and current position
                 float totalDistance = sqrt(pow(distanceX - currentX, 2) + pow(distanceY - currentY, 2));
                 ROS_INFO_STREAM("Will drive forward " << (totalDistance * 10) << " meter to gap.");
@@ -246,15 +231,12 @@ void Robot::findGap() {
                 driveToGapStartTime = ros::Time::now();
             }
 
-            ROS_INFO_STREAM("ros::Time::now().toSec()  " << ros::Time::now().toSec());
-            ROS_INFO_STREAM("driveToGapStartTime.toSec()  " << driveToGapStartTime.toSec());
             ROS_INFO_STREAM("(ros::Time::now() - driveToGapStartTime): " << (ros::Time::now().toSec() - driveToGapStartTime.toSec()));
             ROS_INFO_STREAM("driveToGapDuration: " << driveToGapDuration.toSec());
-            ROS_INFO_STREAM("(ros::Time::now() - driveToGapStartTime) > driveToGapDuration: " << ((ros::Time::now().toSec() - driveToGapStartTime.toSec()) > driveToGapDuration.toSec()));
+            ROS_INFO_STREAM("(ros::Time::now() - driveToGapStartTime) < driveToGapDuration: " << ((ros::Time::now().toSec() - driveToGapStartTime.toSec()) < driveToGapDuration.toSec()));
 
-            if ((ros::Time::now().toSec() - driveToGapStartTime.toSec()) > driveToGapDuration.toSec()) {
+            if ((ros::Time::now().toSec() - driveToGapStartTime.toSec()) < driveToGapDuration.toSec()) {
                 driveForward = false;
-                driveToGapDuration = ros::Duration(0);
             }
         }
     }
@@ -279,7 +261,7 @@ void Robot::driveAutonomous() {
         if(!canRideForward || getBumperStates()) {
             driveForward = false;
         } else {
-            //findGap();
+            findGap();
 
             geometry_msgs::TwistPtr cmd_vel_msg_ptr;
             cmd_vel_msg_ptr.reset(new geometry_msgs::Twist());
@@ -374,6 +356,7 @@ void Robot::driveAutonomous() {
 
                 (*rotation()).decrease(degreestToBlockFrom, 90, 1);
             }
+
         }
 
         // Print out all the degrees and their score.
@@ -441,13 +424,13 @@ bool Robot::rotateTo(int degrees) {
 bool Robot::rotateTo(int degrees, bool fixDegrees) {
 
     if(fixDegrees) {
-        if(degrees >= 80 && degrees <= 100)
+        if(degrees > 87 && degrees < 93)
             degrees = 90;
-        else if(degrees >= 170 && degrees <= 190)
+        else if(degrees > 177 && degrees < 183)
             degrees = 180;
-        else if(degrees >= 260 && degrees <= 280)
+        else if(degrees > 267 && degrees < 273)
             degrees = 270;
-        else if(degrees >= 350 && degrees <= 10)
+        else if(degrees > 357 && degrees < 3)
             degrees = 0;
     }
 

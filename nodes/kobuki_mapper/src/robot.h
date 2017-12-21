@@ -6,6 +6,7 @@
 
 #include <kobuki_mapper/Info.h>
 #include <kobuki_mapper/GridPoint.h>
+#include <kobuki_msgs/Sound.h>
 #include <geometry_msgs/Twist.h>
 #include <tf/transform_listener.h>
 #include <tf/transform_datatypes.h>
@@ -32,6 +33,7 @@ class Robot {
         ros::Publisher time_publisher;
         ros::Publisher speed_publisher;
         ros::Publisher info_publisher;
+
 
         ros::Time startTime;
 
@@ -131,6 +133,9 @@ class Robot {
 
         int getCurrentX();
         int getCurrentY();
+
+
+        ros::Publisher sounds;
 };
 
 #endif
