@@ -1,3 +1,5 @@
+var foundTimer = null;
+
 $(function() {
 
 
@@ -104,6 +106,21 @@ $(function() {
 
             $('#battery span').text(json['battery'] + '%');
             $('#battery-status').css('width', json['battery'] + '%');
+
+            if(typeof(json['found']) !== 'undefined') {
+                if(parseInt(json['found']) == 1) {
+                    $('#object-found').show();
+
+                    if(foundTimer != null)
+                        clearTimeout(foundTimer);
+
+                    foundTimer = setTimeout(function () {
+                        $('#object-found').hide();
+                    }, 3000);
+                } else {
+                    $('#object-found').hide();
+                }
+            }
 
 
 

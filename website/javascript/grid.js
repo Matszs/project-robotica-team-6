@@ -81,9 +81,9 @@ $(function() {
             ctx.beginPath();
             ctx.rect(gridBlock.x * gridSize, gridBlock.y * gridSize, gridSize, gridSize);
 
-            ctx.fillStyle = (gridBlock['type'] === 1 ? "#50D050" : "#f61f1f");
+            ctx.fillStyle = (gridBlock['type'] === 3 ? '#6141d0' : (gridBlock['type'] === 1 ? "#50D050" : "#f61f1f"));
             ctx.fill();
-            ctx.strokeStyle = (gridBlock['type'] === 1 ? "#50D050" : "#f61f1f");
+            ctx.strokeStyle = (gridBlock['type'] === 3 ? '#6141d0' : (gridBlock['type'] === 1 ? "#50D050" : "#f61f1f"));
             ctx.stroke();
         }
 
@@ -97,9 +97,9 @@ $(function() {
         ctx.beginPath();
         ctx.rect(gridBlock.x * gridSize, gridBlock.y * gridSize, gridSize, gridSize);
 
-        ctx.fillStyle = (gridBlock['type'] === 1 ? "#50D050" : "#f61f1f");
+        ctx.fillStyle = (gridBlock['type'] === 3 ? '#6141d0' : (gridBlock['type'] === 1 ? "#50D050" : "#f61f1f"));
         ctx.fill();
-        ctx.strokeStyle = (gridBlock['type'] === 1 ? "#50D050" : "#f61f1f");
+        ctx.strokeStyle = (gridBlock['type'] === 3 ? '#6141d0' : (gridBlock['type'] === 1 ? "#50D050" : "#f61f1f"));
         ctx.stroke();
 
         drawLocation();

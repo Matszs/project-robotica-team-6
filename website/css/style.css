@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900');
 
+@keyframes blinker {
+    50% { opacity: 0; }
+}
+
 html, body {
     margin: 0;
     padding: 0;
@@ -19,6 +23,28 @@ canvas {
     position: absolute;
     width: 100%;
     z-index: 10;
+}
+
+#object-found {
+    display: none;
+    background: #fff;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+    border-radius: 3px;
+    height: 200px;
+    line-height: 100px;
+    left: 50%;
+    transition: 0.3s;
+    top: 50%;
+    margin: -100px 0 0 -150px;
+    padding: 20px 20px;
+    position: absolute;
+    z-index: 11;
+    text-align: center;
+    width: 300px;
+}
+
+#object-found img {
+    animation: blinker 1s linear infinite;
 }
 
 #box-view, #stats-view, #time-view {

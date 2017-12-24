@@ -33,11 +33,15 @@ void Robot::publishTime() {
 }
 
 void Robot::runTasks(){
+    if((ros::Time::now().toSec() - foundTime.toSec()) > 3)
+        foundBuffer = 0;
+
     Info info;
     info.time = ros::Time::now().toSec() - startTime.toSec();
     info.speed = speedBuffer;
     info.degrees = getDegrees();
     info.battery = batteryBuffer;
+    info.found = foundBuffer;
 
     info_publisher.publish(info);
 }
@@ -48,6 +52,28 @@ void Robot::setSpeed(float speed){
 
 void Robot::setBatteryPercentage(int batteryPercentage){
     batteryBuffer = batteryPercentage;
+}
+
+void Robot::setFound(int found){
+    foundBuffer = found;
+    foundTime = ros::Time::now();
+}
+
+void Robot::setFound(int found, vision::TrackedPosition v){
+    foundBuffer = found;
+    foundTime = ros::Time::now();
+    int directionDegrees = getDegrees();
+
+    int blockX = calculateGridDistance(v.x);
+    int blockY = calculateGridDistance(v.y);
+    int blockD = calculateGridDistance(v.z);
+
+    int directionY = getCurrentY() - round(cos(round(directionDegrees) * M_PI / 180) * blockD); // cos(0 * pi / 180) * 5 = 5
+    int directionX = getCurrentX() + round(sin(round(directionDegrees) * M_PI / 180) * blockD); // sin(0 * pi / 180) * 5 = 0
+
+    ROS_INFO_STREAM("direction X: "<< directionX << " direction Y: " << directionY);
+
+    (*map()).addTile(directionX, directionY, 3);
 }
 
 void Robot::setOrientation(geometry_msgs::Quaternion orientation) {

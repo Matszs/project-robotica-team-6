@@ -95,6 +95,8 @@ void objectCallback(const vision::TrackedPositionConstPtr & msg){
     kobuki_msgs::Sound soundObj;
     soundObj.value = 6;
     robot.sounds.publish(soundObj);
+
+    robot.setFound(1, *msg);
 }
 
 

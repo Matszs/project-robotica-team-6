@@ -13,6 +13,7 @@
 #include <sensor_msgs/Imu.h>
 #include "std_msgs/Float64.h"
 #include "std_msgs/Int32.h"
+#include <vision/TrackedPosition.h>
 
 class Rotation;
 class Map;
@@ -48,6 +49,8 @@ class Robot {
         float speedBuffer = 0;
         int timeBuffer = 0;
         int batteryBuffer = 0;
+        int foundBuffer = 0;
+        ros::Time foundTime;
 
         float degrees = 0;
         float angularZ = 0;
@@ -130,6 +133,8 @@ class Robot {
         void setSpeed(float speed);
         void runTasks();
         void setBatteryPercentage(int batteryPercentage);
+        void setFound(int found);
+        void setFound(int found, vision::TrackedPosition v);
 
         int getCurrentX();
         int getCurrentY();
