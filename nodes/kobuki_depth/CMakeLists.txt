@@ -39,5 +39,6 @@ catkin_package(
 )
 
 add_executable(kobuki_depth src/kobuki_depth.cpp)
+add_dependencies(kobuki_depth kobuki_depth_generate_messages_cpp)
 target_link_libraries(kobuki_depth ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 

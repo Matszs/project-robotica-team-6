@@ -26,7 +26,7 @@ generate_messages(
 catkin_package(
     LIBRARIES ${PROJECT_NAME}
     INCLUDE_DIRS include
-    DEPENDS message_runtime rt pthread
+    DEPENDS message_runtime
 )
 
 ## Sources

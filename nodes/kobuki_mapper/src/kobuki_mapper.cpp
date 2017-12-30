@@ -22,6 +22,8 @@
 #include <cstdio>
 
 #include "robot.h"
+#include "module_loader.h"
+#include "modules/button.h"
 
 using namespace std;
 using namespace kobuki_mapper; // instead of kobuki_mapper::GridPoint, we can use GridPoint
@@ -31,6 +33,12 @@ using namespace kobuki_ultrasone;
 bool is_activated = false;
 
 Robot robot;
+std::map<std::string, Module *> ModuleLoader::modules; // defines modules map
+
+
+
+
+
 
 void odomCallback(const nav_msgs::OdometryConstPtr& msg) {
     // Get current location from Odom
@@ -104,7 +112,7 @@ void objectCallback(const vision::TrackedPositionConstPtr & msg){
 void spin() {
     ros::Rate spin_rate(10);
     while(ros::ok) {
-        if(is_activated) {
+        if((static_cast<Button *>(ModuleLoader::get("button")))->isActive()) {
             robot.drive();
 
         }
@@ -124,21 +132,32 @@ int main(int argc, char **argv) {
 	ROS_INFO("ros::init done");
 
     ros::NodeHandle n;
+
+
+
+
+
+
+
+
+
     robot.init(&n);
 
 	ros::Subscriber odom_sub            = n.subscribe("/odom", 100, odomCallback);
 	ros::Subscriber cameraPoints        = n.subscribe("/camera_points", 100, cameraPointsCallback);
 	ros::Subscriber ultrasoneSensors    = n.subscribe("/ultrasone_sensors", 100, ultrasoneSensorsCallback);
 
-	ros::Subscriber buttons             = n.subscribe("/mobile_base/events/button", 100, buttonsCallback);
+	//ros::Subscriber buttons             = n.subscribe("/mobile_base/events/button", 100, buttonsCallback);
 	ros::Subscriber imuData             = n.subscribe("/mobile_base/sensors/imu_data", 1, imuDataCallback);
 	ros::Subscriber bumperSubscriber    = n.subscribe("/mobile_base/events/bumper", 10, bumperCallback);
 	ros::Subscriber battery             = n.subscribe("/mobile_base/sensors/core", 1, batteryCallback);
 
     ros::Subscriber visionObject        = n.subscribe("/vision/tracked_position", 1, objectCallback);
-	/*robot.printRotationPossibilities();
-	robot.decreaseRotationPossibilities(315, 90, 2);
-	robot.printRotationPossibilities();*/
+
+
+
+	// load modules
+	ModuleLoader::add("button", new Button(&n));
 
     spin(); // uncomment to drive
 
