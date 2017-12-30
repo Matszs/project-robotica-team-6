@@ -24,6 +24,7 @@
 #include "robot.h"
 #include "module_loader.h"
 #include "modules/button.h"
+#include "modules/object_tracker.h"
 
 using namespace std;
 using namespace kobuki_mapper; // instead of kobuki_mapper::GridPoint, we can use GridPoint
@@ -57,19 +58,6 @@ void odomCallback(const nav_msgs::OdometryConstPtr& msg) {
     robot.setSpeed(msg->twist.twist.linear.x);
 }
 
-void buttonsCallback(const kobuki_msgs::ButtonEventConstPtr& msg) {
-
-    ROS_INFO_STREAM("button: " << msg->button);
-    ROS_INFO_STREAM("state: " << msg->state);
-
-    // When pressing the first button
-    if(msg->button == 2 && msg->state == 1) {
-        is_activated = !is_activated;
-
-        ROS_INFO_STREAM("activated: " << is_activated);
-    }
-}
-
 void cameraPointsCallback(const CameraPointConstPtr& msg) {
     robot.setCameraDepth(msg->z);
 }
@@ -99,13 +87,6 @@ void batteryCallback(const kobuki_msgs::SensorStateConstPtr& msg){
     robot.setBatteryPercentage((int)(((float)msg->battery / 160 * 100)));
 }
 
-void objectCallback(const vision::TrackedPositionConstPtr & msg){
-    kobuki_msgs::Sound soundObj;
-    soundObj.value = 6;
-    robot.sounds.publish(soundObj);
-
-    robot.setFound(1, *msg);
-}
 
 
 
@@ -134,30 +115,22 @@ int main(int argc, char **argv) {
     ros::NodeHandle n;
 
 
-
-
-
-
-
-
-
     robot.init(&n);
 
 	ros::Subscriber odom_sub            = n.subscribe("/odom", 100, odomCallback);
 	ros::Subscriber cameraPoints        = n.subscribe("/camera_points", 100, cameraPointsCallback);
 	ros::Subscriber ultrasoneSensors    = n.subscribe("/ultrasone_sensors", 100, ultrasoneSensorsCallback);
 
-	//ros::Subscriber buttons             = n.subscribe("/mobile_base/events/button", 100, buttonsCallback);
 	ros::Subscriber imuData             = n.subscribe("/mobile_base/sensors/imu_data", 1, imuDataCallback);
 	ros::Subscriber bumperSubscriber    = n.subscribe("/mobile_base/events/bumper", 10, bumperCallback);
 	ros::Subscriber battery             = n.subscribe("/mobile_base/sensors/core", 1, batteryCallback);
 
-    ros::Subscriber visionObject        = n.subscribe("/vision/tracked_position", 1, objectCallback);
 
 
 
 	// load modules
 	ModuleLoader::add("button", new Button(&n));
+	ModuleLoader::add("object_tracker", new ObjectTracker(&n));
 
     spin(); // uncomment to drive
 

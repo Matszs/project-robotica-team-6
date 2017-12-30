@@ -34,6 +34,16 @@ catkin_package(
 
 add_compile_options(-std=c++11)
 
-add_executable(kobuki_mapper src/kobuki_mapper.cpp src/module_loader.cpp src/modules/module.cpp src/modules/button.cpp src/robot.cpp src/square.cpp src/pathfinder.cpp src/rotation.cpp src/map.cpp)
+add_executable(kobuki_mapper
+	src/kobuki_mapper.cpp
+	src/module_loader.cpp
+	src/modules/module.cpp
+	src/modules/button.cpp
+	src/modules/object_tracker.cpp
+	src/robot.cpp
+	src/square.cpp
+	src/pathfinder.cpp
+	src/rotation.cpp
+	src/map.cpp)
 target_link_libraries(kobuki_mapper ${catkin_LIBRARIES})
 
