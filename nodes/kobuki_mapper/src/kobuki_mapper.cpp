@@ -25,6 +25,7 @@
 #include "module_loader.h"
 #include "modules/button.h"
 #include "modules/object_tracker.h"
+#include "modules/location.h"
 
 using namespace std;
 using namespace kobuki_mapper; // instead of kobuki_mapper::GridPoint, we can use GridPoint
@@ -131,6 +132,8 @@ int main(int argc, char **argv) {
 	// load modules
 	ModuleLoader::add("button", new Button(&n));
 	ModuleLoader::add("object_tracker", new ObjectTracker(&n));
+	ModuleLoader::add("location", new Location(&n));
+	ModuleLoader::add("battery", new Battery(&n));
 
     spin(); // uncomment to drive
 

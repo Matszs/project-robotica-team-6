@@ -135,6 +135,9 @@ So you define a variable which will hold the pointer to your module.
 
 Important is naming your files, classes, methods the right way.
 
-* snake_case with files
-* CamelCase with class-names
-* camelCase which methods.
+* snake_case files (test_file.cpp)
+* CamelCase class-names (ClassName)
+* camelCase methods. (getUser)
+* Create subscriber in class this way: 
+```nodeHandle->subscribe("/mobile_base/events/button", 100, &Button::buttonPressCallback, this);```
+

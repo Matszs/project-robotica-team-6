@@ -4,8 +4,6 @@
 #include <kobuki_mapper/GridPoint.h>
 #include <ros/ros.h>
 
-class Robot;
-
 enum direction {
     FRONT,
     RIGHT,
@@ -21,13 +19,12 @@ class Map {
     private:
         vector<GridPoint> grid;
         ros::Publisher gridFieldPublisher;
-        Robot * robot;
 
     public:
-        Map(ros::NodeHandle * nodeHandle, Robot * robot);
+        Map(ros::NodeHandle * nodeHandle);
         GridPoint* getTile(int x, int y);
         void addTile(int x, int y, int type);
-        bool checkTileDirection(enum direction, double degrees);
+        bool checkTileDirection(enum direction, double degrees, int currentX, int currentY);
 
 
 };

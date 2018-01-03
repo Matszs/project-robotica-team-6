@@ -40,6 +40,8 @@ add_executable(kobuki_mapper
 	src/modules/module.cpp
 	src/modules/button.cpp
 	src/modules/object_tracker.cpp
+	src/modules/location.cpp
+	src/modules/battery.cpp
 	src/robot.cpp
 	src/square.cpp
 	src/pathfinder.cpp
