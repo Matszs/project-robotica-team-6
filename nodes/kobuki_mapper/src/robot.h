@@ -18,8 +18,6 @@
 class Rotation;
 class Map;
 
-#include "pathfinder.h"
-
 #define WALL_DISTANCE_MIN 100
 
 using namespace std;

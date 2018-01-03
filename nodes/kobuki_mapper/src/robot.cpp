@@ -572,11 +572,11 @@ void Robot::drive() {
 }
 
 void Robot::calculatePath() {
-    Pathfinder pathfinder;
+/*    Pathfinder pathfinder;
     pathfinder.setCurrentLocation(currentX, currentY);
     pathfinder.setDataSet(grid);
 
-    pathfinder.calculatePath();
+    pathfinder.calculatePath();*/
 }
 
 Map * Robot::map() {

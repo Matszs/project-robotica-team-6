@@ -14,6 +14,7 @@ class ModuleLoader {
 		void init();
 		static void add(string name, Module * module);
 		static Module * get(string name);
+		static void performReadings();
 
 };
 

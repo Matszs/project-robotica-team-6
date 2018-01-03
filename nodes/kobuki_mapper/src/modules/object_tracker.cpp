@@ -6,8 +6,8 @@ void ObjectTracker::visionTrackedPositionCallback(const vision::TrackedPositionC
 	soundObject.value = 6;
 	soundsPublisher.publish(soundObject);
 
-	// TODO create method 'objectIsFound', boolean
-	// this method will check if the time passed by < 3 sec, reset
+	objectHasBeenFound = true;
+	objectFoundTimer = ros::Time::now();
 }
 
 ObjectTracker::ObjectTracker(ros::NodeHandle * nodeHandle) : Module(nodeHandle) {
@@ -18,5 +18,19 @@ ObjectTracker::ObjectTracker(ros::NodeHandle * nodeHandle) : Module(nodeHandle) 
 }
 
 void ObjectTracker::read() {
+	checkExpirationOfFoundObject();
 	ROS_INFO_STREAM("ObjectTracker:: read.");
+}
+
+bool ObjectTracker::objectFound() {
+	checkExpirationOfFoundObject();
+	return objectHasBeenFound;
+}
+
+// This method checks if the 'objectHasBeenFound' bool has to be reset to false
+// This is the case after 3 seconds.
+void ObjectTracker::checkExpirationOfFoundObject() {
+	if(objectHasBeenFound)
+		if((ros::Time::now().toSec() - objectFoundTimer.toSec()) > 3)
+			objectHasBeenFound = false;
 }

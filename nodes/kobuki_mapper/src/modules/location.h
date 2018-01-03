@@ -6,6 +6,8 @@
 #include <nav_msgs/Odometry.h>
 #include <sensor_msgs/Imu.h>
 #include <kobuki_mapper/GridPoint.h>
+#include <tf/transform_listener.h>
+#include <tf/transform_datatypes.h>
 
 class Location : public Module {
 	private:
@@ -16,7 +18,7 @@ class Location : public Module {
 		void odomCallback(const nav_msgs::OdometryConstPtr& msg);
 		void imuDataCallback(const sensor_msgs::ImuConstPtr& msg);
 
-		Map map;
+		Map * map;
 		int currentX; // current location horizontal
 		int currentY; // current location vertical
 
@@ -27,6 +29,9 @@ class Location : public Module {
 		Location(ros::NodeHandle * nodeHandle);
 		void read();
 		double getDegrees();
+		float getDrivingSpeed();
+		void setCurrentPosition(int x, int y);
+
 		static int calculateGridDistance(float input);
 
 };

@@ -7,13 +7,18 @@
 
 class ObjectTracker : public Module {
 	private:
+		void checkExpirationOfFoundObject();
 		void visionTrackedPositionCallback(const vision::TrackedPositionConstPtr & msg);
 		ros::Subscriber visionTrackedPositionSubscriber;
 		ros::Publisher soundsPublisher;
 
+		bool objectHasBeenFound = false;
+		ros::Time objectFoundTimer;
+
 	public:
 		ObjectTracker(ros::NodeHandle * nodeHandle);
 		void read();
+		bool objectFound();
 };
 
 #endif

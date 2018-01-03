@@ -21,7 +21,7 @@ void Location::imuDataCallback(const sensor_msgs::ImuConstPtr& msg) {
 }
 
 Location::Location(ros::NodeHandle * nodeHandle) : Module(nodeHandle) {
-	map = Map(nodeHandle);
+	map = new Map(nodeHandle);
 
 	imuDataSubscriber 			= nodeHandle->subscribe("/mobile_base/sensors/imu_data", 1, &Location::imuDataCallback, this);
 	odomSubscriber 				= nodeHandle->subscribe("/odom", 100, &Location::odomCallback, this);
@@ -52,14 +52,18 @@ double Location::getDegrees() {
 	return degrees;
 }
 
+float Location::getDrivingSpeed() {
+	return drivingSpeed;
+}
+
 
 // GRID
 
 void Location::setCurrentPosition(int x, int y) {
-    GridPoint * gridPoint = map.getTile(x, y);
+    GridPoint * gridPoint = map->getTile(x, y);
 
     if(gridPoint == nullptr) {
-        map.addTile(x, y, 1); // 1 because it is the current position, so it is walkable.
+        map->addTile(x, y, 1); // 1 because it is the current position, so it is walkable.
     }
 
     if(x != currentX || y != currentY) {

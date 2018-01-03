@@ -9,10 +9,10 @@ Battery::Battery(ros::NodeHandle * nodeHandle) : Module(nodeHandle) {
 	ROS_INFO_STREAM("Battery:: Module initialized.");
 }
 
-void Button::read() {
+void Battery::read() {
 	ROS_INFO_STREAM("Battery:: read.");
 }
 
-int Button::getBatteryLevel() {
+int Battery::getBatteryLevel() {
 	return batteryLevel;
 }

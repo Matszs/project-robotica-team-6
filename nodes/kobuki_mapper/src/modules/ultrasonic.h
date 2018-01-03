@@ -13,7 +13,7 @@ class Ultrasonic : public Module {
 	public:
 		Ultrasonic(ros::NodeHandle * nodeHandle);
 		void read();
-		void Ultrasonic::setUltrasonicSensorDistance(int sensor, int distance);
+		void setUltrasonicSensorDistance(int sensor, int distance);
 		int getSensorDistance(int sensor);
 };
 

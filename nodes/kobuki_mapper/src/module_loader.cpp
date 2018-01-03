@@ -8,3 +8,10 @@ void ModuleLoader::add(string name, Module * module) {
 Module * ModuleLoader::get(string name) {
 	return ModuleLoader::modules[name];
 }
+
+void ModuleLoader::performReadings() {
+	 // call read() function of every module
+	for (std::map<std::string, Module *>::iterator moduleIterator = modules.begin(); moduleIterator != modules.end(); ++moduleIterator) {
+		moduleIterator->second->read();
+	}
+}

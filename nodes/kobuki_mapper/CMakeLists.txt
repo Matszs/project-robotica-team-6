@@ -44,9 +44,8 @@ add_executable(kobuki_mapper
 	src/modules/battery.cpp
 	src/modules/bumper.cpp
 	src/modules/ultrasonic.cpp
-	src/robot.cpp
-	src/square.cpp
-	src/pathfinder.cpp
+	src/modules/info_publisher.cpp
+	src/modules/drive.cpp
 	src/rotation.cpp
 	src/map.cpp)
 target_link_libraries(kobuki_mapper ${catkin_LIBRARIES})

@@ -18,13 +18,13 @@ void Bumper::read() {
 }
 
 void Bumper::setBumperState(int index, bool state) {
-    bumper[index] = state;
+    bumperSides[index] = state;
 }
 
 bool Bumper::getBumperStates(){
-    return (bumper[0] || bumper[1] || bumper[2]);
+    return (bumperSides[0] || bumperSides[1] || bumperSides[2]);
 }
 
 bool Bumper::getBumperState(int index){
-    return bumper[index];
+    return bumperSides[index];
 }
