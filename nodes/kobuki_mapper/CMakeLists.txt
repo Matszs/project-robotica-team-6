@@ -42,6 +42,8 @@ add_executable(kobuki_mapper
 	src/modules/object_tracker.cpp
 	src/modules/location.cpp
 	src/modules/battery.cpp
+	src/modules/bumper.cpp
+	src/modules/ultrasonic.cpp
 	src/robot.cpp
 	src/square.cpp
 	src/pathfinder.cpp

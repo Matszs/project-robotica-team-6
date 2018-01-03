@@ -2,6 +2,7 @@
 #define __BATTERY_H_INCLUDED__
 
 #include "module.h"
+#include <kobuki_msgs/SensorState.h>
 
 class Battery : public Module {
 	private:
