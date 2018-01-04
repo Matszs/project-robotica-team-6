@@ -55,9 +55,9 @@ int main(int argc, char **argv) {
 	//ros::Subscriber cameraPoints = n.subscribe("/camera_points", 100, cameraPointsCallback);
 
 	// load modules
+	ModuleLoader::add("location", new Location(&n));
 	ModuleLoader::add("button", new Button(&n));
 	ModuleLoader::add("object_tracker", new ObjectTracker(&n));
-	ModuleLoader::add("location", new Location(&n));
 	ModuleLoader::add("battery", new Battery(&n));
 	ModuleLoader::add("bumper", new Bumper(&n));
 	ModuleLoader::add("ultrasonic", new Ultrasonic(&n));
