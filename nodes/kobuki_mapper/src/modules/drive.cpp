@@ -1,6 +1,8 @@
 #include "drive.h"
 
 Drive::Drive(ros::NodeHandle * nodeHandle) : Module(nodeHandle) {
+    rotation = new Rotation();
+    rotation->reset();
 	velocityPublisher = nodeHandle->advertise<geometry_msgs::Twist>("/mobile_base/commands/velocity", 1);
 
 	ROS_INFO_STREAM("Drive:: Module initialized.");
@@ -12,10 +14,91 @@ void Drive::read() {
 }
 
 void Drive::autonomousDriving() {
-	if((static_cast<Button *>(ModuleLoader::get("button")))->isActive()) {
-		// todo driving
-	}
+	if(!(static_cast<Button *>(ModuleLoader::get("button")))->isActive())
+	    return;
+
+
+
 }
+
+void Drive::forward() {
+    geometry_msgs::TwistPtr cmd_vel_msg_ptr;
+    cmd_vel_msg_ptr.reset(new geometry_msgs::Twist());
+
+    cmd_vel_msg_ptr->linear.x = LINEAR;
+    velocityPublisher.publish(cmd_vel_msg_ptr);
+}
+
+void Drive::stop() {
+    geometry_msgs::TwistPtr cmd_vel_msg_ptr;
+    cmd_vel_msg_ptr.reset(new geometry_msgs::Twist());
+    velocityPublisher.publish(cmd_vel_msg_ptr);
+}
+
+void Drive::findDirection() {
+    rotation->reset();
+
+    checkUltrasonicSensors();
+    checkBumperSensors();
+    checkAlreadyVisitedLocations();
+
+}
+
+void Drive::checkAlreadyVisitedLocations() {
+    enum directions direction;
+    Location * location = (static_cast<Location *>(ModuleLoader::get("location")));
+
+    for(int direction = FRONT; direction <= LEFT; direction++) {
+
+        if(location->getMap()->checkTileDirection((enum directions)direction, location->getDegrees(), location->getCurrentX(), location->getCurrentY())) {
+            int degreestToBlockFrom = 315 + (90 * direction);
+
+            if(degreestToBlockFrom > 359)
+                degreestToBlockFrom -= 360;
+
+            rotation->decrease(degreestToBlockFrom, 90, 1);
+        }
+
+    }
+}
+
+void Drive::checkUltrasonicSensors() {
+    Ultrasonic * ultrasonic = (static_cast<Ultrasonic *>(ModuleLoader::get("ultrasonic")));
+
+    int front   = ultrasonic->getSensorDistance(0);
+    int back    = ultrasonic->getSensorDistance(2);
+    int left    = ultrasonic->getSensorDistance(3);
+    int right   = ultrasonic->getSensorDistance(1);
+
+    bool canRideForward     = (front > WALL_DISTANCE);
+    bool canRideBackward    = (back > WALL_DISTANCE);
+    bool canTurnLeft        = (left > WALL_DISTANCE);
+    bool canTurnRight       = (right > WALL_DISTANCE);
+
+    // Check if we can go any direction based on ultrasonic sensors
+    if(!canTurnRight)
+        rotation->decrease(225, 90, 2);
+    if(!canTurnLeft)
+        rotation->decrease(45, 90, 2);
+    if(!canRideForward)
+        rotation->decrease(315, 90, 2);
+    if(!canRideBackward)
+        rotation->decrease(135, 90, 2);
+}
+
+void Drive::checkBumperSensors() {
+    Bumper * bumper = (static_cast<Bumper *>(ModuleLoader::get("bumper")));
+
+    // Check bumper states and subtract 1 from the rotation possibilities
+    if(bumper->getBumperState(0))
+        rotation->decrease(225, 90, 1);
+    if(bumper->getBumperState(1))
+        rotation->decrease(315, 90, 1);
+    if(bumper->getBumperState(2))
+        rotation->decrease(45, 90, 1);
+}
+
+
 
 
 
@@ -57,7 +140,7 @@ bool Drive::rotateTo(int degrees, bool fixDegrees) {
 
 
 	float distance = abs(absoluteDistanceCurrent) / abs(absoluteDistanceStart);
-	float speed = 1.4 * distance;
+	float speed = ANGULAR * distance;
 	ROS_INFO_STREAM("Drive:: speed: " << speed);
 
 	if(speed < 0.2)
@@ -95,9 +178,7 @@ bool Drive::rotateTo(int degrees, bool fixDegrees) {
 	}
 
 	if(isDone) {
-		geometry_msgs::TwistPtr cmd_vel_msg_ptr;
-		cmd_vel_msg_ptr.reset(new geometry_msgs::Twist());
-		velocityPublisher.publish(cmd_vel_msg_ptr);
+		stop();
 	}
 
     ROS_INFO_STREAM("Drive:: isDone " << isDone);

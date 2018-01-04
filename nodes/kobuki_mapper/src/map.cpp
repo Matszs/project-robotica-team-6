@@ -30,7 +30,7 @@ void Map::addTile(int x, int y, int type) {
     gridFieldPublisher.publish(gridPoint);
 }
 
-bool Map::checkTileDirection(enum direction d, double degrees, int currentX, int currentY){
+bool Map::checkTileDirection(enum directions d, double degrees, int currentX, int currentY){
     float directionDegrees = degrees + (d * 90);
 
     if(directionDegrees > 359)

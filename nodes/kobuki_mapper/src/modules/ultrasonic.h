@@ -9,12 +9,14 @@ class Ultrasonic : public Module {
 		void ultrasonicSensorsReadCallback(const kobuki_ultrasone::UltrasoneSensorsConstPtr& msg);
 		ros::Subscriber ultrasonicSubscriber;
 		int values[4] = { 1000, 1000, 1000, 1000 }; // front, right, back, left (before-front view)
+		int bufferedValues[4] = {0,0,0,0};
 
 	public:
 		Ultrasonic(ros::NodeHandle * nodeHandle);
 		void read();
 		void setUltrasonicSensorDistance(int sensor, int distance);
 		int getSensorDistance(int sensor);
+		int getAvgSensorDistance(int sensor);
 };
 
 #endif

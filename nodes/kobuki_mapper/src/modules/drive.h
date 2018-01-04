@@ -4,8 +4,18 @@
 #include "module.h"
 #include <geometry_msgs/Twist.h>
 #include "../module_loader.h"
+#include "../map.h"
+#include "../rotation.h"
+
 #include "button.h"
 #include "location.h"
+#include "ultrasonic.h"
+#include "bumper.h"
+
+#define LINEAR 0.2
+#define ANGULAR 1.4
+#define WALL_DISTANCE 20
+#define MIN_WALL_DISTANCE 100
 
 class Drive : public Module {
 	private:
@@ -15,6 +25,8 @@ class Drive : public Module {
 		// 'remembers' the degrees it started before rotating by the 'rotateTo'-method
 		double rotateToStartDegrees = -1;
 
+		Rotation * rotation;
+
 	public:
 		Drive(ros::NodeHandle * nodeHandle);
 		void read();
@@ -22,6 +34,12 @@ class Drive : public Module {
 		bool rotateTo(int degrees);
 		bool rotateTo(int degrees, bool fixDegrees);
 		bool rotateBy(int degrees, bool clockwise);
+		void stop();
+		void forward();
+		void findDirection();
+		void checkUltrasonicSensors();
+		void checkBumperSensors();
+		void checkAlreadyVisitedLocations();
 
 };
 

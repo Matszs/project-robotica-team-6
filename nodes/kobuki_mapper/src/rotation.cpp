@@ -1,11 +1,7 @@
 #include "rotation.h"
 
-Rotation::Rotation(Robot * robot) {
-    this->robot = robot;
-}
-
 void Rotation::reset() {
-    fill(begin(rotationPossibilities), end(rotationPossibilities), DEFAULT_ROTATION_VALUE); // set all values to 5.
+    fill(begin(rotationPossibilities), end(rotationPossibilities), DEFAULT_ROTATION_VALUE); // set all values to default value.
 }
 
 void Rotation::update(int index, int length, int math) {

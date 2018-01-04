@@ -31,6 +31,9 @@ class Location : public Module {
 		double getDegrees();
 		float getDrivingSpeed();
 		void setCurrentPosition(int x, int y);
+		Map * getMap();
+		int getCurrentX();
+		int getCurrentY();
 
 		static int calculateGridDistance(float input);
 

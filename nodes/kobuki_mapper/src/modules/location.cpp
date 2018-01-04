@@ -81,6 +81,18 @@ void Location::setCurrentPosition(int x, int y) {
     }
 }
 
+int Location::getCurrentX() {
+    return currentX;
+}
+
+int Location::getCurrentY() {
+    return currentY;
+}
+
+Map * Location::getMap() {
+    return map;
+}
+
 // STATIC
 
 int Location::calculateGridDistance(float input) {

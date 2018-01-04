@@ -4,7 +4,7 @@
 #include <kobuki_mapper/GridPoint.h>
 #include <ros/ros.h>
 
-enum direction {
+enum directions {
     FRONT,
     RIGHT,
     BACK,
@@ -24,7 +24,7 @@ class Map {
         Map(ros::NodeHandle * nodeHandle);
         GridPoint* getTile(int x, int y);
         void addTile(int x, int y, int type);
-        bool checkTileDirection(enum direction, double degrees, int currentX, int currentY);
+        bool checkTileDirection(enum directions, double degrees, int currentX, int currentY);
 
 
 };
