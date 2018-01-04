@@ -33,6 +33,16 @@ void Rotation::print() {
     }
 }
 
+kobuki_mapper::Obstacle Rotation::getRotationPossibilitiesObstacle() {
+    kobuki_mapper::Obstacle obstacleMsg;
+
+    for( unsigned int i = 0; i < (sizeof(rotationPossibilities) / sizeof(rotationPossibilities[0])); i++ ) {
+        obstacleMsg.degrees.push_back(rotationPossibilities[i]);
+    }
+
+    return obstacleMsg;
+}
+
 int Rotation::getDirection() {
     std::vector<int> rotationDegrees;
     int highestValue = 0;

@@ -25,6 +25,6 @@ int Ultrasonic::getSensorDistance(int sensor) {
 	return values[sensor];
 }
 
-int Ultrasone::getAvgSensorDistance(int sensor){
+int Ultrasonic::getAvgSensorDistance(int sensor){
     return (bufferedValues[sensor] + values[sensor]) / 2;
 }

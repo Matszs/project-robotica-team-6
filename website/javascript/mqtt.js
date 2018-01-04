@@ -1,4 +1,5 @@
 var foundTimer = null;
+var degrees = 0;
 
 $(function() {
 
@@ -21,6 +22,7 @@ $(function() {
         client.subscribe("ros/grid_field");
         client.subscribe("ros/location");
         client.subscribe("ros/info");
+        client.subscribe("ros/obstacle");
 
         $('#status').addClass('online').removeClass('offline');
     }
@@ -76,6 +78,7 @@ $(function() {
 
         if(message.destinationName == 'ros/info') {
 
+            degrees = json['degrees'];
             // degrees
             $('#kobuki-view').css('transform', 'rotate(' + (parseFloat(json['degrees'])) + 'deg)');
 
@@ -104,6 +107,9 @@ $(function() {
 
             // battery
 
+            if(json['battery'] > 100)
+                json['battery'] = 100;
+
             $('#battery span').text(json['battery'] + '%');
             $('#battery-status').css('width', json['battery'] + '%');
 
@@ -123,6 +129,34 @@ $(function() {
             }
 
 
+
+        }
+
+        if(message.destinationName == 'ros/obstacle') {
+
+            obstacleDetectionContext.clearRect(-obstacleDetection.width, -obstacleDetection.height, obstacleDetection.width * 2, obstacleDetection.height * 2);
+
+            $('#obstacle-detection').css('transform', 'rotate(' + (parseFloat(degrees)) + 'deg)');
+
+            for(var i = 0; i < json['degrees'].length; i++) {
+
+                var value = json['degrees'][i];
+
+                var radiansStart = i * (Math.PI / 180) - (Math.PI / 2);
+                var radiansEnd = (i + 1) * (Math.PI / 180) - (Math.PI / 2);
+
+
+                obstacleDetectionContext.beginPath();
+                obstacleDetectionContext.moveTo(0, 0);
+                obstacleDetectionContext.lineTo((160 - (value * 9)) * Math.cos(Math.PI * i / 180.0 - (Math.PI / 2)), (160 - (value * 9)) * Math.sin(Math.PI * i / 180.0 - (Math.PI / 2)));
+                //obstacleDetectionContext.strokeStyle = '#5998ff';
+                obstacleDetectionContext.strokeStyle = 'rgba(' + (255 - (25 * value)) * 3 + ', 100, 140, 0.7)';
+                console.log('rgba(' + (255 - (25 * value)) * 3 + ', 100, 140, 0.7)');
+                obstacleDetectionContext.lineWidth = 3;
+                obstacleDetectionContext.stroke();
+
+
+            }
 
         }
     }

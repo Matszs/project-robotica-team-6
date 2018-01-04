@@ -2,6 +2,8 @@
 #define __ROTATION_H_INCLUDED__
 
 #include <ros/ros.h>
+#include <kobuki_mapper/Obstacle.h>
+
 #define DEFAULT_ROTATION_VALUE 10
 using namespace std;
 
@@ -16,6 +18,7 @@ class Rotation {
         void decrease(int index, int length, int steps);
         void increase(int index, int length, int steps);
         void print();
+        kobuki_mapper::Obstacle getRotationPossibilitiesObstacle();
         int getDirection();
 
 

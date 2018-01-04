@@ -15,6 +15,7 @@ add_message_files(
         FILES
         GridPoint.msg
         Info.msg
+        Obstacle.msg
 )
 
 find_package(PCL REQUIRED COMPONENTS)

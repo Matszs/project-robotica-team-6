@@ -20,12 +20,17 @@
 class Drive : public Module {
 	private:
 		ros::Publisher velocityPublisher;
+		ros::Publisher obstaclePublisher;
 		// 'remembers' the degrees to rotate from by the 'rotateBy'-method
 		double rotateByStartDegrees = -1;
 		// 'remembers' the degrees it started before rotating by the 'rotateTo'-method
 		double rotateToStartDegrees = -1;
 
+		int newDriveDirection = -1;
+
 		Rotation * rotation;
+
+		void publishObstacleData();
 
 	public:
 		Drive(ros::NodeHandle * nodeHandle);
@@ -36,7 +41,7 @@ class Drive : public Module {
 		bool rotateBy(int degrees, bool clockwise);
 		void stop();
 		void forward();
-		void findDirection();
+		int findDirection();
 		void checkUltrasonicSensors();
 		void checkBumperSensors();
 		void checkAlreadyVisitedLocations();

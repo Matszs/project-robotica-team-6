@@ -188,6 +188,12 @@ hr {
     top: 50%;
 }
 
+#obstacle-detection {
+    height: 200px;
+    width: 300px;
+    z-index: 0;
+}
+
 
 #battery {
     background: #fff;

@@ -4,11 +4,13 @@ Drive::Drive(ros::NodeHandle * nodeHandle) : Module(nodeHandle) {
     rotation = new Rotation();
     rotation->reset();
 	velocityPublisher = nodeHandle->advertise<geometry_msgs::Twist>("/mobile_base/commands/velocity", 1);
+	obstaclePublisher = nodeHandle->advertise<kobuki_mapper::Obstacle>("/obstacle", 1);
 
 	ROS_INFO_STREAM("Drive:: Module initialized.");
 }
 
 void Drive::read() {
+
 	autonomousDriving();
 	ROS_INFO_STREAM("Drive:: read.");
 }
@@ -17,8 +19,19 @@ void Drive::autonomousDriving() {
 	if(!(static_cast<Button *>(ModuleLoader::get("button")))->isActive())
 	    return;
 
+    bool canDriveForward = ((static_cast<Ultrasonic *>(ModuleLoader::get("ultrasonic")))->getSensorDistance(0) > WALL_DISTANCE);
 
+    if(canDriveForward && newDriveDirection == -1) {
+        forward();
+    } else {
+        if(newDriveDirection == -1)
+            newDriveDirection = findDirection();
 
+        if(rotateTo(newDriveDirection)) {
+            newDriveDirection = -1;
+            ROS_INFO_STREAM("Drive:: >>>>>>>>>>>>>>>> RESET!!!!!!!!!!");
+        }
+    }
 }
 
 void Drive::forward() {
@@ -35,13 +48,21 @@ void Drive::stop() {
     velocityPublisher.publish(cmd_vel_msg_ptr);
 }
 
-void Drive::findDirection() {
+int Drive::findDirection() {
     rotation->reset();
 
     checkUltrasonicSensors();
     checkBumperSensors();
     checkAlreadyVisitedLocations();
 
+    rotation->print();
+    publishObstacleData();
+
+    return rotation->getDirection();
+}
+
+void Drive::publishObstacleData() {
+    obstaclePublisher.publish(rotation->getRotationPossibilitiesObstacle());
 }
 
 void Drive::checkAlreadyVisitedLocations() {
@@ -58,7 +79,6 @@ void Drive::checkAlreadyVisitedLocations() {
 
             rotation->decrease(degreestToBlockFrom, 90, 1);
         }
-
     }
 }
 
