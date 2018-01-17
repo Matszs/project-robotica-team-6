@@ -5,6 +5,7 @@
 
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
+#include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <opencv2/opencv.hpp>
 #include <signal.h>
@@ -48,6 +49,7 @@ private:
 	ros::Subscriber set_colour_sub;
 
 	ros::Publisher tracked_pos_pub;
+	ros::Publisher treshhold_img = nh.advertise<sensor_msgs::Image>("/camera/treshhold_img", 2, false);
 
 	// Customizable
 	int low_h, high_h, low_s, high_s, low_v, high_v;
@@ -155,7 +157,7 @@ public:
 		double dArea = oMoments.m00;
 
 		// Ignore noise
-		if (dArea > 9000) {
+		if (dArea > 4500) {
 			// calc pos
 			pos_x = dM10 / dArea;
 			pos_y = dM01 / dArea;
@@ -172,13 +174,13 @@ public:
 			pos_y = -1;
 		}
 
-		if (debug) {
-			Mat img_toShow = img_lines_color + cv_ptr->image;
-			imshow("Original image", img_toShow);
-			imshow("Thresholded image", img_thresholded);
 
-			cvWaitKey(1);
-		}
+        cv_bridge::CvImage img_bridge;
+        sensor_msgs::Image img_msg; // >> message to be sent
+
+        img_bridge = cv_bridge::CvImage(msg->header, sensor_msgs::image_encodings::MONO8, img_thresholded);
+        treshhold_img.publish(img_bridge.toImageMsg()); // ros::Publisher pub_img = node.advertise<sensor_msgs::Image>("topic", queuesize);
+
 
 		pcl::PointCloud<pcl::PointXYZ> pc;
 		pcl::fromROSMsg(*pcl, pc);
@@ -186,7 +188,19 @@ public:
 		if (pos_x >= 0 && pos_y >= 0) {
 			pcl::PointXYZ p = pc.at(pos_x, pos_y);
 
-			if (!isnan(p.z)) {
+			if(isnan(p.z))
+			    p.z = 0;
+
+            vision::TrackedPosition pos;
+            pos.x = p.x;
+            pos.y = p.y;
+            pos.z = p.z;
+
+            tracked_pos_pub.publish(pos);
+
+            ROS_INFO_STREAM("[CAMERA PUBLISHED] xyz: " << p.x << "|" << p.y << "|" << p.z);
+
+			/*if (!isnan(p.z)) {
 				vision::TrackedPosition pos;
 				pos.x = p.x;
 				pos.y = p.y;
@@ -195,7 +209,7 @@ public:
 				tracked_pos_pub.publish(pos);
 
 				ROS_INFO_STREAM("[CAMERA PUBLISHED] xyz: " << p.x << "|" << p.y << "|" << p.z);
-			}
+			}*/
 		}
 	}
 

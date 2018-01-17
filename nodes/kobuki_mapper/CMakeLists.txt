@@ -47,7 +47,11 @@ add_executable(kobuki_mapper
 	src/modules/ultrasonic.cpp
 	src/modules/info_publisher.cpp
 	src/modules/drive.cpp
+	src/modules/arm.cpp
 	src/rotation.cpp
 	src/map.cpp)
+
+add_dependencies(kobuki_mapper kobuki_mapper_generate_messages_cpp)
+
 target_link_libraries(kobuki_mapper ${catkin_LIBRARIES})
 

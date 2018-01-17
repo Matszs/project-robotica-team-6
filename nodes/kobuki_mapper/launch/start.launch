@@ -1,5 +1,10 @@
 <launch>
 	<depend package="tf" />
+	<include file="/opt/ros/kinetic/share/kobuki_node/launch/minimal.launch" />
+	<include file="/opt/ros/kinetic/share/mqtt_bridge/launch/mqttbridge.launch" />
+	<include file="/home/kobuki6/workspace/src/vision/launch/object_tracker.launch" />
+	<include file="/home/kobuki6/workspace/src/kobuki_ultrasone/launch/start.launch" />
+	<include file="/home/kobuki6/workspace/src/robot_arm/start.launch" />
 	<node pkg="kobuki_mapper" type="kobuki_mapper" name="kobuki_mapper" output="screen" />
 </launch>
 

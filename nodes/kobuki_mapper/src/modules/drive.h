@@ -11,6 +11,7 @@
 #include "location.h"
 #include "ultrasonic.h"
 #include "bumper.h"
+#include "object_tracker.h"
 
 #define LINEAR 0.2
 #define ANGULAR 1.4

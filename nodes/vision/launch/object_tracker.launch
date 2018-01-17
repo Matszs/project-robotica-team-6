@@ -1,9 +1,9 @@
 <launch>
-	<param name="vision/settings/hue_low"  value="44" type="int" />
-	<param name="vision/settings/hue_high" value="78" type="int" />
-	<param name="vision/settings/sat_low"  value="100" type="int" />
+	<param name="vision/settings/hue_low"  value="169" type="int" />
+	<param name="vision/settings/hue_high" value="179" type="int" />
+	<param name="vision/settings/sat_low"  value="160" type="int" />
 	<param name="vision/settings/sat_high" value="255" type="int" />
-	<param name="vision/settings/val_low"  value="30" type="int" />
+	<param name="vision/settings/val_low"  value="70" type="int" />
 	<param name="vision/settings/val_high" value="255" type="int" />
 
 	<include file="$(find astra_launch)/launch/astra.launch" />

@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(vision)
+add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
         roscpp
@@ -35,9 +36,6 @@ catkin_package(
         CATKIN_DEPENDS roscpp std_msgs message_runtime pcl_msgs DEPENDS PCL
 )
 
-add_compile_options(-std=c++11)
-
 add_executable(tracker src/vision.cpp)
-add_dependencies(tracker vision_generate_messages_cpp)
 target_link_libraries(tracker ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} ${PCL_LIBRARIES})
 

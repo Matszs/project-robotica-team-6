@@ -20,6 +20,7 @@
 #include "modules/ultrasonic.h"
 #include "modules/info_publisher.h"
 #include "modules/drive.h"
+#include "modules/arm.h"
 
 using namespace std;
 
@@ -37,8 +38,6 @@ void spin() {
 
         ros::spinOnce();
         spin_rate.sleep();
-        //robot.publishTime();
-        //robot.runTasks();
 
     }
 }
@@ -63,6 +62,7 @@ int main(int argc, char **argv) {
 	ModuleLoader::add("ultrasonic", new Ultrasonic(&n));
 	ModuleLoader::add("info_publisher", new InfoPublisher(&n));
 	ModuleLoader::add("drive", new Drive(&n));
+	ModuleLoader::add("arm", new Arm(&n));
 
     spin(); // uncomment to drive
 

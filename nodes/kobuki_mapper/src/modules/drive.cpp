@@ -18,6 +18,8 @@ void Drive::read() {
 void Drive::autonomousDriving() {
 	if(!(static_cast<Button *>(ModuleLoader::get("button")))->isActive())
 	    return;
+    if((static_cast<ObjectTracker *>(ModuleLoader::get("object_tracker")))->objectFound())
+        return;
 
     bool canDriveForward = ((static_cast<Ultrasonic *>(ModuleLoader::get("ultrasonic")))->getSensorDistance(0) > WALL_DISTANCE);
 
