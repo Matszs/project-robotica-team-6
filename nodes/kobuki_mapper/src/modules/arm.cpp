@@ -59,14 +59,14 @@ void Arm::setStartPosition() {
     jointState3.position.push_back(1.57); // 1.57 => 'recht naar voren', 0 => 'naar beneden'
     armPublisher.publish(jointState3);
 
-    /*ros::Duration(1.0).sleep();
+    ros::Duration(1.0).sleep();
 
-    sensor_msgs::JointState jointState4;
+    /*sensor_msgs::JointState jointState4;
     jointState4.name.push_back(ARM_HAND);
     jointState4.position.push_back(0.01);
-    armPublisher.publish(jointState4);
+    armPublisher.publish(jointState4);*/
 
-    ros::Duration(1.0).sleep();*/
+    ros::Duration(1.0).sleep();
 
 }
 
@@ -74,6 +74,12 @@ void Arm::setStartPosition() {
 
 void Arm::resetPosition() {
 
+ /*sensor_msgs::JointState jointState4;
+    jointState4.name.push_back(ARM_HAND);
+    jointState4.position.push_back(99.9);
+    armPublisher.publish(jointState4);
+
+    ros::Duration(2.0).sleep();*/
 
     sensor_msgs::JointState jointState1;
     jointState1.name.push_back(ARM_SHOULDER);
@@ -111,15 +117,21 @@ void Arm::resetPosition() {
 
     ros::Duration(2.0).sleep();
 
+    jointState2.name.push_back(ARM_ELBOW);
+    jointState2.position.push_back(-1.5); //-1.5 => 'klap in', 0 => 'omhoog', 1.5 => 'recht vooruit' 
+    armPublisher.publish(jointState2);
+
+    ros::Duration(2.0).sleep();
+
 
     sensor_msgs::JointState jointState;
     jointState.name.push_back(ARM_BASE);
     jointState.position.push_back(0.7); // 0 => 90 graden, 1.57 => 0 graden
     armPublisher.publish(jointState);
 
-    /*ros::Duration(1.0).sleep();
+    ros::Duration(1.0).sleep();
 
-    sensor_msgs::JointState jointState4;
+    /*sensor_msgs::JointState jointState4;
     jointState4.name.push_back(ARM_HAND);
     jointState4.position.push_back(0.01);
     armPublisher.publish(jointState4);
